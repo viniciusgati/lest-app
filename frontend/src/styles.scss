@@ -1,0 +1,14 @@
+/* Apenas primeicons — tema Aura é injetado via providePrimeNG() */
+@import "primeicons/primeicons.css";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+}
