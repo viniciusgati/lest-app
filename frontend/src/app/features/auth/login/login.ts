@@ -52,6 +52,7 @@ export class Login {
       user: { email: email!, password: password! }
     }).subscribe({
       next: () => {
+        this.loading = false;
         this.router.navigate(['/']);
       },
       error: () => {

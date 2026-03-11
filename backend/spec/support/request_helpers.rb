@@ -3,9 +3,9 @@ module RequestHelpers
     JSON.parse(response.body, symbolize_names: true)
   end
 
-  def auth_headers_for(user)
+  def auth_headers_for(user, password: 'password123')
     post '/api/v1/auth/login',
-         params: { user: { email: user.email, password: 'password123' } },
+         params: { user: { email: user.email, password: password } },
          as: :json
     token = response.headers['Authorization']
     { 'Authorization' => token }
