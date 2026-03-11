@@ -1,0 +1,93 @@
+<div class="signup-container">
+  <p-card styleClass="signup-card">
+    <ng-template pTemplate="header">
+      <div class="signup-header">
+        <h1>EduTrack</h1>
+        <p>Crie sua conta</p>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" styleClass="w-full mb-3" />
+      }
+
+      <div class="field">
+        <label for="name">Nome</label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          placeholder="Seu nome"
+          class="w-full"
+          [class.ng-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+        />
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+          <small class="p-error">Nome deve ter ao menos 2 caracteres.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          formControlName="email"
+          placeholder="seu@email.com"
+          class="w-full"
+          [class.ng-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+        />
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <small class="p-error">Email inválido.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        />
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <small class="p-error">Senha deve ter ao menos 6 caracteres.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password_confirmation">Confirmar senha</label>
+        <p-password
+          inputId="password_confirmation"
+          formControlName="password_confirmation"
+          placeholder="Repita a senha"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        />
+        @if (form.errors?.['passwordMismatch'] && form.get('password_confirmation')?.touched) {
+          <small class="p-error">Senhas não coincidem.</small>
+        }
+      </div>
+
+      <p-button
+        type="submit"
+        label="Cadastrar"
+        [loading]="loading"
+        [disabled]="form.invalid"
+        styleClass="w-full mt-2"
+      />
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p class="text-center mt-3">
+        Já tem conta? <a routerLink="/auth/login">Entrar</a>
+      </p>
+    </ng-template>
+  </p-card>
+</div>

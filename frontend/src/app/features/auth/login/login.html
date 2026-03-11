@@ -1,0 +1,63 @@
+<div class="login-container">
+  <p-card styleClass="login-card">
+    <ng-template pTemplate="header">
+      <div class="login-header">
+        <h1>EduTrack</h1>
+        <p>Entre na sua conta</p>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" styleClass="w-full mb-3" />
+      }
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          formControlName="email"
+          placeholder="seu@email.com"
+          class="w-full"
+          [class.ng-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+        />
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <small class="p-error">Email inválido.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          [class.ng-invalid]="form.get('password')?.invalid && form.get('password')?.touched"
+        />
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <small class="p-error">Senha deve ter ao menos 6 caracteres.</small>
+        }
+      </div>
+
+      <p-button
+        type="submit"
+        label="Entrar"
+        [loading]="loading"
+        [disabled]="form.invalid"
+        styleClass="w-full mt-2"
+      />
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p class="text-center mt-3">
+        Não tem conta? <a routerLink="/auth/signup">Cadastre-se</a>
+      </p>
+    </ng-template>
+  </p-card>
+</div>
