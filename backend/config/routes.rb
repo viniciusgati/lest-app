@@ -18,6 +18,14 @@ Rails.application.routes.draw do
                }
   end
 
+  namespace :api do
+    namespace :v1 do
+      resources :subjects do
+        resources :topics
+      end
+    end
+  end
+
   # Catch-all: delega para Angular (deve ser o ÚLTIMO)
   get '*path',
       to: 'application#fallback_index_html',
