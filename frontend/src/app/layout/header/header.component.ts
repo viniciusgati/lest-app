@@ -50,6 +50,8 @@ export class HeaderComponent {
   pageTitle = computed(() => this.routeTitles[this.currentUrl()] ?? 'EduTrack');
 
   logout(): void {
-    this.auth.logout().subscribe();
+    this.auth.logout().subscribe({
+      error: () => this.auth.clearSession()
+    });
   }
 }

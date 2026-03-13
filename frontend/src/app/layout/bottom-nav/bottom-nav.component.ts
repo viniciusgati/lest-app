@@ -60,7 +60,7 @@ interface NavItem {
   `]
 })
 export class BottomNavComponent {
-  navItems: NavItem[] = [
+  readonly navItems: NavItem[] = [
     { label: 'Home', icon: 'pi-home', route: '/' },
     { label: 'Matérias', icon: 'pi-book', route: '/subjects' },
     { label: 'Agenda', icon: 'pi-calendar', route: '/agenda' },
