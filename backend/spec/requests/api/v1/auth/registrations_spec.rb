@@ -35,7 +35,7 @@ RSpec.describe 'POST /api/v1/auth/signup', type: :request do
     it 'retorna 422 com mensagem de erro' do
       post '/api/v1/auth/signup', params: valid_params, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json_response[:message]).to eq('Erro ao criar conta.')
       expect(json_response[:errors]).to be_present
     end
@@ -47,7 +47,7 @@ RSpec.describe 'POST /api/v1/auth/signup', type: :request do
            params: { user: valid_params[:user].merge(password: '123', password_confirmation: '123') },
            as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
@@ -57,7 +57,7 @@ RSpec.describe 'POST /api/v1/auth/signup', type: :request do
            params: { user: valid_params[:user].merge(name: '') },
            as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 end

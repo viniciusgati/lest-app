@@ -28,7 +28,7 @@ module Api
             render json: {
               message: 'Erro ao criar conta.',
               errors: resource.errors.full_messages
-            }, status: :unprocessable_entity
+            }, status: :unprocessable_content
           end
         end
       end
