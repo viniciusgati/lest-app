@@ -1,0 +1,89 @@
+.agenda-container {
+  padding: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+
+  .agenda-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .agenda-header-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+  }
+
+  .loading-overlay {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+}
+
+/* FullCalendar customizations */
+.fc {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+
+  .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .fc-button {
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.75rem;
+    border-radius: 4px;
+    padding: 1px 4px;
+  }
+}
+
+/* Dialog sessão */
+.session-detail {
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--p-surface-border);
+    font-size: 0.9rem;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: var(--p-text-muted-color);
+      font-size: 0.8125rem;
+    }
+
+    .auto-badge {
+      font-size: 0.75rem;
+      color: var(--p-text-muted-color);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+  }
+}
+
+/* Dialog agendamento */
+.schedule-form {
+  .field {
+    margin-bottom: 1rem;
+  }
+}

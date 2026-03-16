@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { of } from 'rxjs';
+import { of, Subject as RxSubject } from 'rxjs';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ActivatedRoute } from '@angular/router';
@@ -134,5 +134,42 @@ describe('SubjectDetail', () => {
     expect(component.dialogVisible).toBe(true);
     expect(component.editingTopic).toEqual(topic);
     expect(component.form.value.name).toBe('Equações');
+  });
+
+  it('onFormKeydown para Enter para propagação do evento', () => {
+    const mockEvent = { key: 'Enter', stopPropagation: vi.fn() } as unknown as KeyboardEvent;
+    component.onFormKeydown(mockEvent);
+    expect(mockEvent.stopPropagation).toHaveBeenCalledTimes(1);
+  });
+
+  it('onFormKeydown para outras teclas não para propagação', () => {
+    const mockEvent = { key: 'Tab', stopPropagation: vi.fn() } as unknown as KeyboardEvent;
+    component.onFormKeydown(mockEvent);
+    expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
+  });
+
+  it('save() remove foco do elemento ativo antes de fechar dialog', () => {
+    const novo: Topic = { id: 12, subject_id: 1, name: 'Geometria', notes: null, ease_factor: 2.5, interval: 1, next_review: '2026-03-22', created_at: '' };
+    mockTopicService.create.mockReturnValue(of(novo));
+    const mockEl = { blur: vi.fn() };
+    vi.spyOn(document, 'activeElement', 'get').mockReturnValue(mockEl as unknown as Element);
+
+    component.dialogVisible = true;
+    component.form.patchValue({ name: 'Geometria' });
+    component.save();
+
+    expect(mockEl.blur).toHaveBeenCalled();
+    expect(component.dialogVisible).toBe(false);
+  });
+
+  it('save() ignora chamada dupla enquanto já está salvando (flag saving)', () => {
+    const response$ = new RxSubject<Topic>();
+    mockTopicService.create.mockReturnValue(response$.asObservable());
+    component.form.patchValue({ name: 'Álgebra' });
+
+    component.save(); // saving = true, requisição pendente
+    component.save(); // saving = true → deve ser ignorada
+
+    expect(mockTopicService.create).toHaveBeenCalledTimes(1);
   });
 });

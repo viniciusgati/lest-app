@@ -48,7 +48,7 @@
     [modal]="true"
     [style]="{ width: '90vw', maxWidth: '400px' }"
   >
-    <form [formGroup]="form" (ngSubmit)="save()">
+    <form [formGroup]="form" (ngSubmit)="save()" (keydown)="onFormKeydown($event)">
       <div class="field">
         <label for="name">Nome</label>
         <input

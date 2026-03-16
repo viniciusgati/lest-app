@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { of } from 'rxjs';
+import { of, Subject as RxSubject } from 'rxjs';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { Subjects } from './subjects';
@@ -122,5 +122,42 @@ describe('Subjects', () => {
     // Verifica propriedade sem acionar change detection para evitar NG0100
     component.loading = true;
     expect(component.loading).toBe(true);
+  });
+
+  it('onFormKeydown para Enter para propagação do evento', () => {
+    const mockEvent = { key: 'Enter', stopPropagation: vi.fn() } as unknown as KeyboardEvent;
+    component.onFormKeydown(mockEvent);
+    expect(mockEvent.stopPropagation).toHaveBeenCalledTimes(1);
+  });
+
+  it('onFormKeydown para outras teclas não para propagação', () => {
+    const mockEvent = { key: 'Tab', stopPropagation: vi.fn() } as unknown as KeyboardEvent;
+    component.onFormKeydown(mockEvent);
+    expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
+  });
+
+  it('save() remove foco do elemento ativo antes de fechar dialog', () => {
+    const nova: Subject = { id: 3, name: 'Física', created_at: '' };
+    mockService.create.mockReturnValue(of(nova));
+    const mockEl = { blur: vi.fn() };
+    vi.spyOn(document, 'activeElement', 'get').mockReturnValue(mockEl as unknown as Element);
+
+    component.dialogVisible = true;
+    component.form.patchValue({ name: 'Física' });
+    component.save();
+
+    expect(mockEl.blur).toHaveBeenCalled();
+    expect(component.dialogVisible).toBe(false);
+  });
+
+  it('save() ignora chamada dupla enquanto já está salvando (flag saving)', () => {
+    const response$ = new RxSubject<Subject>();
+    mockService.create.mockReturnValue(response$.asObservable());
+    component.form.patchValue({ name: 'Biologia' });
+
+    component.save(); // saving = true, requisição pendente
+    component.save(); // saving = true → deve ser ignorada
+
+    expect(mockService.create).toHaveBeenCalledTimes(1);
   });
 });

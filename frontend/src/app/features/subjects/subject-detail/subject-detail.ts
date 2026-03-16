@@ -78,6 +78,12 @@ export class SubjectDetail implements OnInit {
     this.dialogVisible = true;
   }
 
+  onFormKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.stopPropagation();
+    }
+  }
+
   save(): void {
     if (this.form.invalid || this.saving) return;
     const name = this.form.value.name!;
@@ -96,6 +102,7 @@ export class SubjectDetail implements OnInit {
         } else {
           this.topics = [...this.topics, saved];
         }
+        (document.activeElement as HTMLElement)?.blur();
         this.dialogVisible = false;
         this.saving = false;
       },
