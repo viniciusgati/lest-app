@@ -1,0 +1,46 @@
+schema: 1
+story: '2.2'
+story_title: 'Frontend — CRUD de Matérias'
+gate: PASS
+status_reason: 'Todos os 11 ACs implementados e verificados. 107 testes passando (58 backend + 49 frontend). Sem issues CRITICAL ou HIGH. Implementação limpa com padrões Angular modernos.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-15T00:00:00Z'
+
+top_issues: []
+waiver:
+  active: false
+
+quality_score: 100
+expires: '2026-03-29T00:00:00Z'
+
+evidence:
+  tests_reviewed:
+    count: 15
+    breakdown:
+      subjects_component_spec: 10
+      subject_service_spec: 5
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth via AuthInterceptor (Epic 1). XSS protegido por Angular binding. Nenhum dado sensível exposto.'
+  performance:
+    status: PASS
+    notes: 'Arrays imutáveis para change detection. HTTP calls completam em uma emissão sem leak.'
+  reliability:
+    status: PASS
+    notes: 'Error handling via toast em save() e deleteSubject(). loading state gerenciado corretamente.'
+  maintainability:
+    status: PASS
+    notes: 'inject() pattern moderno, código auto-documentado, separação clara service/component/template.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Considerar takeUntilDestroyed() para subscriptions em componentes de vida longa'
+      refs: ['frontend/src/app/features/subjects/subjects/subjects.ts']
+      suggested_owner: dev
