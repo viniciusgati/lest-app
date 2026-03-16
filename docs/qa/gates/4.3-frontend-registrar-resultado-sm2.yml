@@ -1,0 +1,65 @@
+gate: PASS
+story: '4.3'
+title: Frontend — Registrar Resultado + Sugestão SM-2
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-15'
+quality_score: 92
+
+decision: PASS
+summary: >
+  Re-avaliação após fix. C1 resolvido: onDialogHide() implementado com visibleChange.emit(false)
+  + reset(), template atualizado, spec adicionado. 329 testes passando. Todos os ACs
+  cobertos, zero concerns abertos.
+
+evidence:
+  tests:
+    total: 329
+    failures: 0
+    exit_code: 0
+    new_this_story: 31
+  files_reviewed:
+    - frontend/src/app/features/agenda/complete-session/complete-session.ts
+    - frontend/src/app/features/agenda/complete-session/complete-session.html
+    - frontend/src/app/features/agenda/complete-session/complete-session.spec.ts
+    - frontend/src/app/features/agenda/agenda/agenda.ts
+    - frontend/src/app/features/agenda/agenda/agenda.html
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues:
+  - id: C1
+    severity: medium
+    description: >
+      (onHide)="reset()" no p-dialog não chama close() — reset() só limpa estado
+      interno mas não emite visibleChange(false) ao pai. Se usuário fecha via X ou
+      backdrop, Agenda.showCompleteDialog permanece true. Na próxima CD do Angular,
+      [visible]="showCompleteDialog" re-empurra true e o dialog reabre.
+    ac_ref: AC6
+    suggested_owner: dev
+    suggested_fix: >
+      Adicionar método onDialogHide() que chama visibleChange.emit(false) antes de reset().
+      Usar (onHide)="onDialogHide()" no template.
+
+informational:
+  - id: N1
+    description: >
+      step: 1 | 2 | 3 mas step 3 nunca é setado. "Ajustar data" implementado
+      como toggle adjustingDate dentro do step 2. Inconsistência de tipo menor.
+  - id: N2
+    description: >
+      Timezone fix bem documentado no Debug Log: new Date(2026, 2, 28) local
+      vs new Date('2026-03-28') UTC. Consistente com solução de story 3.2.
+
+required_actions:
+  - owner: dev
+    issue: C1
+    priority: medium
+    action: >
+      Substituir (onHide)="reset()" por (onHide)="onDialogHide()" e implementar:
+      onDialogHide() { this.visibleChange.emit(false); this.reset(); }
+
+approval_for_merge: true
+notes: >
+  Re-avaliação: C1 corrigido pelo @dev. Story aprovada para merge.

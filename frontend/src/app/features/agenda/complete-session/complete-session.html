@@ -1,0 +1,111 @@
+<p-toast></p-toast>
+
+<p-dialog
+  header="Registrar Resultado"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '480px' }"
+  [draggable]="false"
+  (onHide)="onDialogHide()">
+
+  <!-- Step 1: Formulário de resultado -->
+  @if (step === 1) {
+    <form [formGroup]="resultForm" class="result-form">
+      <div class="field">
+        <label for="actual_minutes">Tempo real (min)</label>
+        <p-inputNumber
+          id="actual_minutes"
+          formControlName="actual_minutes"
+          [min]="1"
+          [style]="{ width: '100%' }"
+          placeholder="Ex: 30">
+        </p-inputNumber>
+        @if (resultForm.get('actual_minutes')?.invalid && resultForm.get('actual_minutes')?.dirty) {
+          <small class="p-error">Tempo deve ser maior que 0</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="questions_done">Questões feitas</label>
+        <p-inputNumber
+          id="questions_done"
+          formControlName="questions_done"
+          [min]="0"
+          [style]="{ width: '100%' }">
+        </p-inputNumber>
+      </div>
+
+      <div class="field">
+        <label for="questions_correct">Questões acertadas</label>
+        <p-inputNumber
+          id="questions_correct"
+          formControlName="questions_correct"
+          [min]="0"
+          [style]="{ width: '100%' }">
+        </p-inputNumber>
+        @if (hasCorrectsExceedError) {
+          <small class="p-error">Questões acertadas não pode ser maior que questões feitas</small>
+        }
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="close()"></p-button>
+      <p-button
+        label="Registrar"
+        icon="pi pi-check"
+        [disabled]="resultForm.invalid"
+        [loading]="loading"
+        (onClick)="submit()">
+      </p-button>
+    </ng-template>
+  }
+
+  <!-- Step 2: Sugestão SM-2 -->
+  @if (step === 2) {
+    <div class="text-center sm2-suggestion">
+      <i class="pi pi-check-circle" style="font-size: 3rem; color: var(--green-500); display: block; margin-bottom: 1rem;"></i>
+      <h3 style="margin: 0 0 0.5rem">Sessão registrada!</h3>
+      <p style="color: var(--text-color-secondary); margin-bottom: 1.5rem;">
+        {{ resultForm.get('questions_correct')?.value }} / {{ resultForm.get('questions_done')?.value }} questões certas
+        ({{ percentage }}%)
+      </p>
+
+      <p-card>
+        <div class="text-center">
+          <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem;">📅 Próxima revisão sugerida</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ nextReviewLabel }}</div>
+          <div style="color: var(--text-color-secondary);">
+            em {{ interval }} {{ interval === 1 ? 'dia' : 'dias' }}
+          </div>
+        </div>
+      </p-card>
+
+      @if (!adjustingDate) {
+        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem;">
+          <p-button label="Aceitar" icon="pi pi-check" (onClick)="accept()"></p-button>
+          <p-button label="Ajustar data" icon="pi pi-calendar" [outlined]="true" (onClick)="adjustingDate = true"></p-button>
+        </div>
+      } @else {
+        <div style="margin-top: 1.5rem;">
+          <p-datePicker
+            [(ngModel)]="adjustedDate"
+            [inline]="true"
+            [minDate]="tomorrow"
+            [style]="{ width: '100%' }">
+          </p-datePicker>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: center;">
+            <p-button label="Cancelar ajuste" icon="pi pi-arrow-left" severity="secondary" (onClick)="adjustingDate = false"></p-button>
+            <p-button
+              label="Confirmar nova data"
+              icon="pi pi-check"
+              [disabled]="!adjustedDate"
+              (onClick)="confirmAdjusted()">
+            </p-button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</p-dialog>
