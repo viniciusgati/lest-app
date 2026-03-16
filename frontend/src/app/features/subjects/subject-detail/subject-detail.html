@@ -1,0 +1,73 @@
+<div class="subject-detail p-4">
+  <p-toast />
+  <p-confirmDialog />
+
+  <div class="flex align-items-center gap-2 mb-4">
+    <p-button icon="pi pi-arrow-left" [text]="true" routerLink="/subjects" />
+    <h2 class="m-0">{{ subject?.name ?? '...' }}</h2>
+  </div>
+
+  <div class="flex justify-content-between align-items-center mb-3">
+    <span class="text-color-secondary">{{ topics.length }} tema(s)</span>
+    <p-button label="Novo Tema" icon="pi pi-plus" (onClick)="openCreate()" />
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-content-center mt-6">
+      <p-progressSpinner />
+    </div>
+  } @else if (topics.length === 0) {
+    <div class="text-center mt-6">
+      <i class="pi pi-list text-4xl text-color-secondary mb-3 block"></i>
+      <p class="text-color-secondary mb-3">Nenhum tema cadastrado ainda.</p>
+      <p-button label="Criar primeiro tema" icon="pi pi-plus" (onClick)="openCreate()" />
+    </div>
+  } @else {
+    <div class="flex flex-column gap-2">
+      @for (topic of topics; track topic.id) {
+        <p-card>
+          <div class="flex align-items-center justify-content-between">
+            <a [routerLink]="['/subjects', subjectId, 'topics', topic.id]"
+               class="font-medium text-lg no-underline text-color flex-1">
+              {{ topic.name }}
+            </a>
+            <div class="flex align-items-center gap-3">
+              <span class="text-color-secondary text-sm">— acertos</span>
+              <p-button icon="pi pi-pencil" [text]="true" severity="secondary" (onClick)="openEdit(topic)" />
+              <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(topic)" />
+            </div>
+          </div>
+        </p-card>
+      }
+    </div>
+  }
+
+  <p-dialog
+    [(visible)]="dialogVisible"
+    [header]="editingTopic ? 'Editar Tema' : 'Novo Tema'"
+    [modal]="true"
+    [style]="{ width: '90vw', maxWidth: '400px' }"
+  >
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="field">
+        <label for="name">Nome</label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          placeholder="Ex: Equações de 2º grau"
+          class="w-full mt-1"
+          autofocus
+        />
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+          <small class="p-error">Nome é obrigatório (máx. 100 caracteres)</small>
+        }
+      </div>
+    </form>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="dialogVisible = false" />
+      <p-button label="Salvar" icon="pi pi-check" (onClick)="save()" [disabled]="form.invalid" />
+    </ng-template>
+  </p-dialog>
+</div>
