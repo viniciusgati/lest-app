@@ -1,0 +1,45 @@
+gate: PASS
+story: '6.1'
+title: Backend — Agendamento Automático da Semana
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-16'
+quality_score: 97
+
+decision: PASS
+summary: >
+  C1 resolvido: remove_existing_auto_sessions + loop create! agora dentro de
+  ActiveRecord::Base.transaction — atomicidade garantida, rollback automático
+  em caso de falha. N1 resolvido: constante DAYS_MAP removida (dead code).
+  Três estratégias corretas, remoção seletiva, fallback config/meta, clamp de
+  minutos. 403 testes passando, 0 falhas.
+
+evidence:
+  tests:
+    total: 403
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - backend/app/services/schedule_generator.rb
+    - backend/app/controllers/api/v1/schedule_controller.rb
+    - backend/config/routes.rb
+    - backend/spec/services/schedule_generator_spec.rb
+    - backend/spec/requests/api/v1/schedule_spec.rb
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N2
+    description: >
+      return [] if topics.empty? ocorre antes de remove_existing_auto_sessions.
+      Sessões auto-geradas existentes não são removidas quando strategy retorna
+      empty. Comportamento defensivo e razoável para UX. Mantido intencionalmente.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Todos os concerns resolvidos. Story pronta para merge.
