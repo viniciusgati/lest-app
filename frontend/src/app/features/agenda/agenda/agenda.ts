@@ -149,7 +149,8 @@ export class Agenda implements OnInit {
 
   saveSession(): void {
     if (this.scheduleForm.invalid || this.savingSession) return;
-    const { subject_id, ...sessionData } = this.scheduleForm.value;
+    const { subject_id, start_time, ...rest } = this.scheduleForm.value;
+    const sessionData = { ...rest, start_time: start_time || null };
     this.savingSession = true;
     this.sessionService.create(sessionData as Partial<StudySession>).subscribe({
       next: (session) => {

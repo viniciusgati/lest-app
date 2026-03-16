@@ -374,6 +374,21 @@ describe('Agenda', () => {
       expect(component.scheduleForm.value.start_time).toBeNull();
     });
 
+    it('converte start_time vazio para null antes de criar sessão', () => {
+      const novaSession: StudySession = { ...MOCK_SESSION, id: 6, start_time: null };
+      mockSessionService.create.mockReturnValue(of(novaSession));
+      component.scheduleForm.patchValue({
+        scheduled_date: '2026-03-25',
+        start_time: '',
+        subject_id: 1,
+        topic_id: 3,
+        expected_minutes: 30
+      });
+      component.saveSession();
+      const callArg = mockSessionService.create.mock.calls[0][0];
+      expect(callArg.start_time).toBeNull();
+    });
+
     it('cria sessão com start_time preenchido', () => {
       const novaSession: StudySession = { ...MOCK_SESSION, id: 5, start_time: '14:00' };
       mockSessionService.create.mockReturnValue(of(novaSession));
