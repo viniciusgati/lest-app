@@ -94,7 +94,7 @@ module Api
 
       def session_params
         params.require(:study_session).permit(
-          :topic_id, :scheduled_date, :expected_minutes
+          :topic_id, :scheduled_date, :start_time, :expected_minutes
         )
       end
     end

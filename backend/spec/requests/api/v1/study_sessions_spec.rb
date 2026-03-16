@@ -79,6 +79,15 @@ RSpec.describe 'Api::V1::StudySessions', type: :request do
       expect(body['topic_id']).to eq(topic.id)
     end
 
+    it 'cria sessão com start_time' do
+      post '/api/v1/study_sessions',
+           params: { study_session: { topic_id: topic.id, scheduled_date: Date.tomorrow, expected_minutes: 45, start_time: '09:00' } },
+           headers: headers, as: :json
+      expect(response).to have_http_status(:created)
+      body = JSON.parse(response.body)
+      expect(body['start_time']).to be_present
+    end
+
     it 'rejeita topic de outro usuário' do
       other_topic = create(:topic)
       post '/api/v1/study_sessions',

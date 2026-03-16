@@ -25,6 +25,7 @@ const MOCK_SESSION: StudySession = {
   id: 1,
   topic_id: 3,
   scheduled_date: '2026-03-20',
+  start_time: null,
   expected_minutes: 30,
   actual_minutes: null,
   questions_done: 0,
@@ -341,6 +342,52 @@ describe('Agenda', () => {
       (component as any).confirmationService.confirm = (config: { accept: () => void }) => config.accept();
       component.confirmGenerateSchedule();
       expect(component.generating).toBe(false);
+    });
+  });
+
+  describe('mapeamento de start_time no calendário', () => {
+    it('usa "date" quando start_time é null', () => {
+      const sessionSemHorario: StudySession = { ...MOCK_SESSION, start_time: null };
+      mockSessionService.getAll.mockReturnValue(of([sessionSemHorario]));
+      component.loadSessions();
+      const event = (component.calendarOptions.events as any[])[0];
+      expect(event.date).toBe('2026-03-20');
+      expect(event.start).toBeUndefined();
+    });
+
+    it('usa "start" com datetime ISO quando start_time está presente', () => {
+      const sessionComHorario: StudySession = { ...MOCK_SESSION, start_time: '09:30' };
+      mockSessionService.getAll.mockReturnValue(of([sessionComHorario]));
+      component.loadSessions();
+      const event = (component.calendarOptions.events as any[])[0];
+      expect(event.start).toBe('2026-03-20T09:30');
+      expect(event.date).toBeUndefined();
+    });
+
+    it('scheduleForm inclui campo start_time', () => {
+      expect(component.scheduleForm.contains('start_time')).toBe(true);
+    });
+
+    it('openNewSession reseta start_time para null', () => {
+      component.scheduleForm.patchValue({ start_time: '10:00' });
+      component.openNewSession('2026-03-25');
+      expect(component.scheduleForm.value.start_time).toBeNull();
+    });
+
+    it('cria sessão com start_time preenchido', () => {
+      const novaSession: StudySession = { ...MOCK_SESSION, id: 5, start_time: '14:00' };
+      mockSessionService.create.mockReturnValue(of(novaSession));
+      component.scheduleForm.patchValue({
+        scheduled_date: '2026-03-25',
+        start_time: '14:00',
+        subject_id: 1,
+        topic_id: 3,
+        expected_minutes: 30
+      });
+      component.saveSession();
+      expect(mockSessionService.create).toHaveBeenCalled();
+      const callArg = mockSessionService.create.mock.calls[0][0];
+      expect(callArg.start_time).toBe('14:00');
     });
   });
 

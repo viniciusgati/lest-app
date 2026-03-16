@@ -150,6 +150,12 @@ describe('Subjects', () => {
     expect(component.dialogVisible).toBe(false);
   });
 
+  it('cada matéria possui rota de navegação para temas (/subjects/:id)', () => {
+    // Verifica que a lista tem matérias com ids para formar a rota
+    expect(component.subjects.every(s => typeof s.id === 'number')).toBe(true);
+    expect(component.subjects.map(s => `/subjects/${s.id}`)).toEqual(['/subjects/1', '/subjects/2']);
+  });
+
   it('save() ignora chamada dupla enquanto já está salvando (flag saving)', () => {
     const response$ = new RxSubject<Subject>();
     mockService.create.mockReturnValue(response$.asObservable());

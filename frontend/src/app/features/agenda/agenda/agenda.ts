@@ -59,6 +59,7 @@ export class Agenda implements OnInit {
   showScheduleDialog = false;
   scheduleForm = inject(FormBuilder).group({
     scheduled_date: ['', Validators.required],
+    start_time: [null as string | null],
     subject_id: [null as number | null, Validators.required],
     topic_id: [null as number | null, Validators.required],
     expected_minutes: [30, [Validators.required, Validators.min(1)]]
@@ -128,6 +129,7 @@ export class Agenda implements OnInit {
   openNewSession(date?: string): void {
     this.scheduleForm.reset({
       scheduled_date: date ?? '',
+      start_time: null,
       subject_id: null,
       topic_id: null,
       expected_minutes: 30
@@ -294,14 +296,18 @@ export class Agenda implements OnInit {
   }
 
   private updateCalendarEvents(): void {
-    const events: EventInput[] = this.sessions.map(s => ({
-      id: String(s.id),
-      title: `Sessão #${s.id}`,
-      date: s.scheduled_date,
-      backgroundColor: STATUS_COLORS[s.status] ?? STATUS_COLORS['scheduled'],
-      borderColor: STATUS_COLORS[s.status] ?? STATUS_COLORS['scheduled'],
-      extendedProps: { session: s }
-    }));
+    const events: EventInput[] = this.sessions.map(s => {
+      const startKey = s.start_time ? 'start' : 'date';
+      const startVal = s.start_time ? `${s.scheduled_date}T${s.start_time}` : s.scheduled_date;
+      return {
+        id: String(s.id),
+        title: `Sessão #${s.id}`,
+        [startKey]: startVal,
+        backgroundColor: STATUS_COLORS[s.status] ?? STATUS_COLORS['scheduled'],
+        borderColor: STATUS_COLORS[s.status] ?? STATUS_COLORS['scheduled'],
+        extendedProps: { session: s }
+      };
+    });
     this.calendarOptions = { ...this.calendarOptions, events };
   }
 }

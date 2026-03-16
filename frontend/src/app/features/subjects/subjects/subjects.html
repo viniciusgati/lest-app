@@ -22,10 +22,15 @@
       @for (subject of subjects; track subject.id) {
         <p-card>
           <div class="flex align-items-center justify-content-between">
-            <a [routerLink]="['/subjects', subject.id]" class="font-medium text-lg no-underline text-color">
-              {{ subject.name }}
-            </a>
-            <div class="flex gap-2">
+            <span class="font-medium text-lg">{{ subject.name }}</span>
+            <div class="flex gap-2 align-items-center">
+              <p-button
+                label="Temas"
+                icon="pi pi-list"
+                [text]="true"
+                severity="info"
+                [routerLink]="['/subjects', subject.id]"
+              />
               <p-button icon="pi pi-pencil" [text]="true" severity="secondary" (onClick)="openEdit(subject)" />
               <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="confirmDelete(subject)" />
             </div>
