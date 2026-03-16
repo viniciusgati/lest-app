@@ -1,3 +1,182 @@
-<div class="placeholder-page">
-  <p>Agenda (em breve)</p>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="agenda-container">
+  <div class="agenda-header">
+    <h2>Agenda de Estudos</h2>
+    <div class="agenda-header-actions">
+      <p-button
+        label="Gerar semana"
+        icon="pi pi-magic"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="generating"
+        (onClick)="confirmGenerateSchedule()">
+      </p-button>
+      <p-button label="Nova Sessão" icon="pi pi-plus" (onClick)="openNewSession()"></p-button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-overlay">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  }
+
+  <full-calendar [options]="calendarOptions"></full-calendar>
 </div>
+
+<!-- Dialog: Agendar nova sessão -->
+<p-dialog
+  header="Nova Sessão de Estudo"
+  [(visible)]="showScheduleDialog"
+  [modal]="true"
+  [style]="{ width: '480px' }"
+  [draggable]="false">
+
+  <form [formGroup]="scheduleForm" class="schedule-form">
+    <div class="field">
+      <label for="scheduled_date">Data</label>
+      <input
+        id="scheduled_date"
+        type="date"
+        formControlName="scheduled_date"
+        class="p-inputtext w-full" />
+    </div>
+
+    <div class="field">
+      <label for="subject_id">Matéria</label>
+      <p-select
+        id="subject_id"
+        formControlName="subject_id"
+        [options]="subjects"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selecione uma matéria"
+        [style]="{ width: '100%' }"
+        (onChange)="onSubjectChange($event.value)">
+      </p-select>
+    </div>
+
+    <div class="field">
+      <label for="topic_id">Tema</label>
+      <p-select
+        id="topic_id"
+        formControlName="topic_id"
+        [options]="topics"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selecione um tema"
+        [style]="{ width: '100%' }"
+        [disabled]="!scheduleForm.get('subject_id')?.value">
+      </p-select>
+    </div>
+
+    <div class="field">
+      <label for="expected_minutes">Tempo esperado (min)</label>
+      <p-inputNumber
+        id="expected_minutes"
+        formControlName="expected_minutes"
+        [min]="1"
+        [style]="{ width: '100%' }">
+      </p-inputNumber>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="showScheduleDialog = false"></p-button>
+    <p-button
+      label="Agendar"
+      icon="pi pi-check"
+      [disabled]="scheduleForm.invalid"
+      (onClick)="saveSession()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Detalhe da sessão -->
+<p-dialog
+  header="Detalhe da Sessão"
+  [(visible)]="showDetailDialog"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false">
+
+  @if (selectedSession) {
+    <div class="session-detail">
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <p-tag
+          [value]="statusLabel(selectedSession.status)"
+          [severity]="statusSeverity(selectedSession.status)">
+          @if (selectedSession.status === 'late') {
+            <i class="pi pi-exclamation-triangle" style="margin-right: 4px"></i>
+          }
+        </p-tag>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Data</span>
+        <span>{{ selectedSession.scheduled_date }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Matéria</span>
+        <span>{{ selectedSessionSubject?.name ?? '—' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Tema</span>
+        <span>{{ selectedSessionTopic?.name ?? '—' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Tempo esperado</span>
+        <span>{{ selectedSession.expected_minutes }} min</span>
+      </div>
+
+      @if (selectedSession.status === 'completed') {
+        <div class="detail-row">
+          <span class="detail-label">Tempo real</span>
+          <span>{{ selectedSession.actual_minutes }} min</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Questões</span>
+          <span>{{ selectedSession.questions_correct }}/{{ selectedSession.questions_done }}</span>
+        </div>
+      }
+
+      @if (selectedSession.auto_generated) {
+        <div class="detail-row">
+          <span class="auto-badge"><i class="pi pi-refresh"></i> Gerado automaticamente (SM-2)</span>
+        </div>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Excluir"
+      icon="pi pi-trash"
+      severity="danger"
+      [disabled]="selectedSession?.status === 'completed'"
+      (onClick)="confirmDelete()">
+    </p-button>
+    @if (selectedSession?.status !== 'completed') {
+      <p-button
+        label="Registrar resultado"
+        icon="pi pi-check-circle"
+        severity="success"
+        (onClick)="openCompleteSession()">
+      </p-button>
+    }
+    <p-button label="Fechar" icon="pi pi-times" severity="secondary" (onClick)="showDetailDialog = false"></p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Registrar resultado (SM-2) -->
+<app-complete-session
+  [(visible)]="showCompleteDialog"
+  [session]="selectedSession"
+  (sessionCompleted)="onSessionCompleted($event)">
+</app-complete-session>

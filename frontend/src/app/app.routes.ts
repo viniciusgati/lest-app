@@ -34,8 +34,23 @@ export const routes: Routes = [
       },
       {
         path: 'subjects',
-        loadComponent: () =>
-          import('./features/subjects/subjects/subjects').then(m => m.Subjects)
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/subjects/subjects/subjects').then(m => m.Subjects)
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./features/subjects/subject-detail/subject-detail').then(m => m.SubjectDetail)
+          },
+          {
+            path: ':subjectId/topics/:id',
+            loadComponent: () =>
+              import('./features/subjects/topic-detail/topic-detail').then(m => m.TopicDetail)
+          }
+        ]
       },
       {
         path: 'agenda',

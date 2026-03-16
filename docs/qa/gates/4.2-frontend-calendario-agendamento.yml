@@ -1,0 +1,76 @@
+gate: CONCERNS
+story: '4.2'
+title: Frontend — Calendário + Agendamento de Sessões
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-15'
+quality_score: 83
+
+decision: CONCERNS
+summary: >
+  Calendário FullCalendar funcional, cores por status, form de agendamento com cascade matéria→tema,
+  painel de detalhe, 274 testes passando. Dois concerns: botão "Registrar resultado" ausente
+  do dialog (AC8 gap) e N requests paralelos sem cleanup no openSessionDetail.
+
+evidence:
+  tests:
+    total: 274
+    failures: 0
+    exit_code: 0
+    new_this_story: 31
+  files_reviewed:
+    - frontend/src/app/core/models/study-session.model.ts
+    - frontend/src/app/core/services/study-session.service.ts
+    - frontend/src/app/core/services/study-session.service.spec.ts
+    - frontend/src/app/features/agenda/agenda/agenda.ts
+    - frontend/src/app/features/agenda/agenda/agenda.html
+    - frontend/src/app/features/agenda/agenda/agenda.spec.ts
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
+    ac_partial: [8]
+    ac_gaps: []
+
+top_issues:
+  - id: C1
+    severity: medium
+    description: >
+      openSessionDetail (agenda.ts:156-166) itera sobre todos os subjects e dispara
+      topicService.getAll(subj.id) para cada um sem unsubscribe — N requests por clique,
+      risco de memory leak e race condition.
+    ac_ref: AC8
+    suggested_owner: dev
+    suggested_fix: >
+      Usar forkJoin para paralelizar com cleanup, ou implementar early-exit com takeUntil(destroy$).
+      Alternativa: incluir topic_name no payload da sessão via backend.
+
+  - id: C2
+    severity: high
+    description: >
+      Botão "Registrar resultado" ausente do dialog de detalhe — AC8 e Task 4 exigem botão
+      que navega para o fluxo de conclusão (Story 4.3). Template tem apenas "Excluir" e "Fechar".
+    ac_ref: AC8
+    suggested_owner: dev
+    suggested_fix: >
+      Adicionar p-button "Registrar Resultado" no footer do detail dialog.
+      Condicionar a selectedSession.status !== 'completed'.
+      Navegar via routerLink ou router.navigate() para rota de conclusão de 4.3.
+
+informational:
+  - id: N1
+    description: >
+      Título do evento no calendário é 'Sessão #${id}' — Dev Notes especificam 'title: topicName'.
+      Limitação do payload (sem topic_name); funcionalmente aceitável mas diverge da especificação.
+
+required_actions:
+  - owner: dev
+    issue: C2
+    priority: high
+    action: Adicionar botão "Registrar resultado" no detail dialog com navegação para rota 4.3.
+  - owner: dev
+    issue: C1
+    priority: medium
+    action: Refatorar openSessionDetail para evitar N requests sem cleanup.
+
+approval_for_merge: false
+notes: >
+  C2 é a correção prioritária — é um AC explícito desta story que ficou incompleto.
+  C1 pode ser corrigido junto ou em 4.3 se a navegação for implementada lá.
