@@ -67,7 +67,7 @@
     </form>
     <ng-template pTemplate="footer">
       <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="dialogVisible = false" />
-      <p-button label="Salvar" icon="pi pi-check" (onClick)="save()" [disabled]="form.invalid" />
+      <p-button label="Salvar" icon="pi pi-check" (onClick)="save()" [disabled]="form.invalid" [loading]="saving" />
     </ng-template>
   </p-dialog>
 </div>

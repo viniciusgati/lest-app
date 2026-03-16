@@ -28,6 +28,7 @@ import { Subject } from '../../../core/models/subject.model';
 export class Subjects implements OnInit {
   subjects: Subject[] = [];
   loading = false;
+  saving = false;
   dialogVisible = false;
   editingSubject: Subject | null = null;
   form = inject(FormBuilder).group({
@@ -64,9 +65,16 @@ export class Subjects implements OnInit {
     this.dialogVisible = true;
   }
 
+  onFormKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.stopPropagation();
+    }
+  }
+
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid || this.saving) return;
     const name = this.form.value.name!;
+    this.saving = true;
 
     const request$ = this.editingSubject
       ? this.subjectService.update(this.editingSubject.id, name)
@@ -81,11 +89,14 @@ export class Subjects implements OnInit {
         } else {
           this.subjects = [...this.subjects, saved];
         }
+        (document.activeElement as HTMLElement)?.blur();
         this.dialogVisible = false;
+        this.saving = false;
       },
       error: (err) => {
         const msg = err.error?.errors?.[0] ?? 'Erro ao salvar matéria';
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
+        this.saving = false;
       }
     });
   }

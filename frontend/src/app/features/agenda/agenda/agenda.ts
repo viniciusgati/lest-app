@@ -53,6 +53,8 @@ export class Agenda implements OnInit {
   subjects: Subject[] = [];
   topics: Topic[] = [];
 
+  savingSession = false;
+
   // Dialog agendamento
   showScheduleDialog = false;
   scheduleForm = inject(FormBuilder).group({
@@ -144,17 +146,20 @@ export class Agenda implements OnInit {
   }
 
   saveSession(): void {
-    if (this.scheduleForm.invalid) return;
+    if (this.scheduleForm.invalid || this.savingSession) return;
     const { subject_id, ...sessionData } = this.scheduleForm.value;
+    this.savingSession = true;
     this.sessionService.create(sessionData as Partial<StudySession>).subscribe({
       next: (session) => {
         this.sessions = [...this.sessions, session];
         this.updateCalendarEvents();
         this.showScheduleDialog = false;
+        this.savingSession = false;
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Sessão agendada' });
       },
       error: (err) => {
         const msg = err.error?.errors?.[0] ?? 'Erro ao agendar sessão';
+        this.savingSession = false;
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
       }
     });

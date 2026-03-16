@@ -33,6 +33,8 @@ import { WeekDay, ScheduleStrategy } from '../../../core/models/user-config.mode
 })
 export class Goals implements OnInit {
   loading = false;
+  savingGoal = false;
+  savingConfig = false;
   weekLabel = '';
 
   goalForm = inject(FormBuilder).group({
@@ -93,10 +95,15 @@ export class Goals implements OnInit {
   }
 
   saveGoal(): void {
-    if (this.goalForm.invalid) return;
+    if (this.goalForm.invalid || this.savingGoal) return;
+    this.savingGoal = true;
     this.weeklyGoalService.updateCurrent(this.goalForm.value as Partial<WeeklyGoal>).subscribe({
-      next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Meta salva com sucesso' }),
+      next: () => {
+        this.savingGoal = false;
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Meta salva com sucesso' });
+      },
       error: (err) => {
+        this.savingGoal = false;
         const msg = err.error?.errors?.[0] ?? 'Erro ao salvar meta';
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
       }
@@ -104,13 +111,20 @@ export class Goals implements OnInit {
   }
 
   saveConfig(): void {
-    if (this.noDaySelected) return;
+    if (this.noDaySelected || this.savingConfig) return;
+    this.savingConfig = true;
     this.userConfigService.update({
       available_days: this.selectedDays,
       schedule_strategy: this.selectedStrategy
     }).subscribe({
-      next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações salvas' }),
-      error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações' })
+      next: () => {
+        this.savingConfig = false;
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações salvas' });
+      },
+      error: () => {
+        this.savingConfig = false;
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações' });
+      }
     });
   }
 

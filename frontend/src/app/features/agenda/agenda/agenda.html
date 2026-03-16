@@ -89,6 +89,7 @@
       label="Agendar"
       icon="pi pi-check"
       [disabled]="scheduleForm.invalid"
+      [loading]="savingSession"
       (onClick)="saveSession()">
     </p-button>
   </ng-template>

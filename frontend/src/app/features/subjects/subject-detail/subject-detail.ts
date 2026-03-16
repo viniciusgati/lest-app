@@ -30,6 +30,7 @@ export class SubjectDetail implements OnInit {
   subject: Subject | null = null;
   topics: Topic[] = [];
   loading = false;
+  saving = false;
   dialogVisible = false;
   editingTopic: Topic | null = null;
   subjectId!: number;
@@ -78,8 +79,9 @@ export class SubjectDetail implements OnInit {
   }
 
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid || this.saving) return;
     const name = this.form.value.name!;
+    this.saving = true;
 
     const request$ = this.editingTopic
       ? this.topicService.update(this.subjectId, this.editingTopic.id, { name })
@@ -95,10 +97,12 @@ export class SubjectDetail implements OnInit {
           this.topics = [...this.topics, saved];
         }
         this.dialogVisible = false;
+        this.saving = false;
       },
       error: (err) => {
         const msg = err.error?.errors?.[0] ?? 'Erro ao salvar tema';
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
+        this.saving = false;
       }
     });
   }
