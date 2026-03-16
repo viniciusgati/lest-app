@@ -1,5 +1,6 @@
 class Topic < ApplicationRecord
   belongs_to :subject
+  has_many :study_sessions, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 100 }
 

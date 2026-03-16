@@ -23,6 +23,27 @@ Rails.application.routes.draw do
       resources :subjects do
         resources :topics
       end
+
+      resources :weekly_goals, only: [:index] do
+        collection do
+          get  :current
+          put  :current, action: :update_current
+        end
+      end
+
+      resource :user_config, only: [:show, :update]
+
+      resources :study_sessions do
+        member { put :complete }
+      end
+
+      namespace :metrics do
+        get :subjects
+        get 'subjects/:subject_id/topics', action: :subject_topics
+        get :weekly_progress
+      end
+
+      post 'schedule/generate', to: 'schedule#generate'
     end
   end
 

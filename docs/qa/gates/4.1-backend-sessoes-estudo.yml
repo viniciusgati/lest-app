@@ -1,0 +1,69 @@
+gate: CONCERNS
+story: '4.1'
+title: Backend — Sessões de Estudo
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-15'
+quality_score: 92
+
+decision: CONCERNS
+summary: >
+  Implementação sólida — SM-2 correto, scoping por usuário garantido, transação atômica,
+  243 testes passando. Um concern de comportamento: filtro ?status=late retorna silenciosamente
+  vazio porque late é status virtual (não persistido).
+
+evidence:
+  tests:
+    total: 243
+    backend_rspec: 143
+    frontend_vitest: 103  # (103 pré-existentes, não incrementados por esta story)
+    new_this_story: 45
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - backend/app/models/study_session.rb
+    - backend/app/services/sm2_calculator.rb
+    - backend/app/controllers/api/v1/study_sessions_controller.rb
+    - backend/db/migrate/20260315222716_create_study_sessions.rb
+    - backend/spec/factories/study_sessions.rb
+    - backend/spec/services/sm2_calculator_spec.rb
+    - backend/spec/models/study_session_spec.rb
+    - backend/spec/requests/api/v1/study_sessions_spec.rb
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
+    ac_partial: [11]
+    ac_gaps: []
+
+top_issues:
+  - id: C1
+    severity: medium
+    description: >
+      GET /api/v1/study_sessions?status=late executa where(status: 'late') no banco;
+      'late' não é um status persistido, retorna [] sem erro nem aviso.
+    ac_ref: AC11
+    suggested_owner: dev
+    suggested_fix: >
+      Ignorar status=late no filtro de banco (não aplicar where clause) e filtrar em memória,
+      ou documentar explicitamente que este parâmetro não suporta o valor 'late'.
+
+informational:
+  - id: N1
+    description: >
+      render json: chamado dentro do bloco ActiveRecord::Base.transaction — code smell
+      mas funcionalmente seguro pois render é a última instrução (todas operações DB precedem).
+  - id: N2
+    description: >
+      Spec usa :unprocessable_entity; controller usa :unprocessable_content (Rack 3.x).
+      Ambos mapeiam para HTTP 422 — cosmético.
+
+required_actions:
+  - owner: dev
+    issue: C1
+    priority: medium
+    action: >
+      Tratar caso status=late no filtro do index: ignorar a clause where ou filtrar em memória
+      após query. Adicionar teste para comportamento correto de ?status=late.
+
+approval_for_merge: false
+notes: >
+  CONCERNS não bloqueia progresso — dev pode implementar 4.2 em paralelo.
+  C1 deve ser resolvido antes do merge final do Epic 4.
