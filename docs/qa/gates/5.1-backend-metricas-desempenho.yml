@@ -1,0 +1,48 @@
+gate: PASS
+story: '5.1'
+title: Backend — Métricas de Desempenho
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-16'
+quality_score: 95
+
+decision: PASS
+summary: >
+  Todos os 12 ACs implementados e cobertos. MetricsController com 3 endpoints:
+  subjects (accuracy por matéria), subject_topics (accuracy + recent_sessions),
+  weekly_progress (actual vs target). calculate_accuracy retorna nil para
+  zero done. Isolamento por current_user correto. 24 testes passando.
+
+evidence:
+  tests:
+    total: 403
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - backend/app/controllers/api/v1/metrics_controller.rb
+    - backend/config/routes.rb
+    - backend/spec/requests/api/v1/metrics_spec.rb
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      subjects action: includes(:topics) carregado mas nunca usado no map block.
+      Cada completed_sessions_for_subject emite query adicional (N+1 latente).
+      Sem impacto no dataset atual — otimizar se volume de matérias crescer.
+  - id: N2
+    description: >
+      subject_topics action: includes(:study_sessions) eager load ignorado —
+      topic.study_sessions.where(status:completed) emite nova query por tema.
+      Performance aceitável para escala atual.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Story 5.1 aprovada. Backend de métricas funcional com cálculo sob demanda
+  das study_sessions. Sem tabela separada de métricas — design correto.

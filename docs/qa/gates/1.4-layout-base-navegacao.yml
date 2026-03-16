@@ -1,0 +1,46 @@
+gate: PASS
+story: '1.4'
+title: Layout Base + Navegação
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-13'
+quality_score: 95
+
+decision: PASS
+summary: >
+  Todos os 4 concerns da revisão inicial resolvidos: C1 (teste routerLinkActive
+  com navigateByUrl), C2 (pageTitle() para 4 rotas), C3 (logout() com error handler),
+  C4 (readonly navItems). 19/19 testes passando após fixes.
+
+evidence:
+  tests:
+    total: 19
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - frontend/src/app/core/layout/bottom-nav/bottom-nav.component.ts
+    - frontend/src/app/core/layout/bottom-nav/bottom-nav.component.spec.ts
+    - frontend/src/app/core/layout/header/header.component.ts
+    - frontend/src/app/core/layout/header/header.component.spec.ts
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      AC2 menciona emojis (🏠📚📅🎯) mas implementação usa PrimeIcons.
+      Waived — Dev Notes explicitam PrimeIcons como decisão de design.
+  - id: N2
+    description: >
+      Task 8 (verificação browser manual) waived para este gate.
+      Responsabilidade do usuário confirmar visualmente.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Story 1.4 aprovada após re-revisão. Layout base com Shell, BottomNav e Header
+  funcionais. Navegação entre rotas com PrimeIcons implementada corretamente.

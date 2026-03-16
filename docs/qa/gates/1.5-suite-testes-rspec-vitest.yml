@@ -1,0 +1,62 @@
+gate: PASS
+story: '1.5'
+title: Suite de Testes — RSpec + Vitest com Relatório Minimalista
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-16'
+quality_score: 93
+
+decision: PASS
+summary: >
+  Todos os concerns da revisão inicial resolvidos. C4 (vitest-minimal-reporter.ts)
+  removido, W1 (:unprocessable_entity → :unprocessable_content) corrigido nos specs
+  de auth. C1/C2/C3 aceitos como drift de documentação em seções protegidas, sem
+  impacto funcional. Suite: 403 passed, 0 failed, exit 0.
+
+evidence:
+  tests:
+    total: 403
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - backend/spec/support/minimal_formatter.rb
+    - backend/.rspec
+    - backend/spec/rails_helper.rb
+    - backend/spec/factories/users.rb
+    - backend/spec/requests/health_spec.rb
+    - backend/spec/models/user_spec.rb
+    - backend/spec/requests/auth/registrations_spec.rb
+    - backend/spec/requests/auth/sessions_spec.rb
+    - frontend/vitest-minimal-reporter.js
+    - frontend/vitest.config.ts
+    - test.sh
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      AC4 opera de forma diferente em standalone (npm test) vs test.sh.
+      vitest-minimal-reporter.js ativo no vitest.config.ts, mas @angular/build:unit-test
+      exibe reporter nativo em paralelo. Supressão completa só via test.sh.
+      Comportamento documentado nas Dev Notes (Completion Notes). Aceitável.
+  - id: N2
+    description: >
+      Dev Notes e File List original (seções protegidas) ainda referenciam
+      jest.config.js, setup-jest.ts e jest-minimal-reporter.js inexistentes.
+      Drift de documentação sem impacto funcional — seções fora da autoridade do @dev.
+  - id: N3
+    description: >
+      :unprocessable_entity ainda presente em specs de outras stories (weekly_goals,
+      user_configs, study_sessions). Fora do escopo da 1.5 — será tratado nas
+      respectivas stories conforme Rack 3.x adoption.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Story 1.5 aprovada. Epic 1 concluído. Implementação Vitest correcta para
+  Angular 21. MinimalFormatter RSpec funcional. test.sh consolidado com exit code.

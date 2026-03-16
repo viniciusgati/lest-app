@@ -1,0 +1,52 @@
+gate: PASS
+story: '2.1'
+title: Backend — Matérias & Temas (Models + API)
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-13'
+quality_score: 96
+
+decision: PASS
+summary: >
+  Todos os 13 ACs verificados. 91 testes passando, zero warnings.
+  Isolamento por current_user verificado em todas as actions críticas.
+  Cascade destroy Subject→Topics confirmado. SM-2 defaults corretos.
+  :unprocessable_content usado corretamente nos controllers.
+
+evidence:
+  tests:
+    total: 91
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - backend/app/models/subject.rb
+    - backend/app/models/topic.rb
+    - backend/app/controllers/api/v1/subjects_controller.rb
+    - backend/app/controllers/api/v1/topics_controller.rb
+    - backend/config/routes.rb
+    - backend/spec/models/subject_spec.rb
+    - backend/spec/models/topic_spec.rb
+    - backend/spec/requests/api/v1/subjects_spec.rb
+    - backend/spec/requests/api/v1/topics_spec.rb
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      resources gera rotas show sem action implementada. Fora do escopo
+      da story — sem impacto atual.
+  - id: N2
+    description: >
+      SM-2 fields (ease_factor, interval, next_review) não expostos no permit.
+      Decisão de design correta — controle via lógica SM-2 em stories futuras.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Story 2.1 aprovada. Backend de Matérias e Temas funcional com isolamento
+  por usuário, SM-2 defaults e cascade destroy.
