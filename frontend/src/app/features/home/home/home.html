@@ -1,3 +1,135 @@
-<div class="placeholder-page">
-  <p>Home (em breve)</p>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="home-page">
+
+  @if (loading) {
+    <div class="loading-center">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  } @else {
+
+    @if (!hasGoal) {
+      <p-message
+        severity="info"
+        text="Defina sua meta semanal em Metas para uma programação mais precisa."
+        styleClass="mb-3 w-full block">
+      </p-message>
+    }
+
+    <div class="flex justify-content-end mb-3">
+      <p-button
+        label="Gerar semana"
+        icon="pi pi-magic"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="generating"
+        (onClick)="confirmGenerate()">
+      </p-button>
+    </div>
+
+    <!-- Progresso semanal -->
+    <p-card styleClass="mb-4">
+      <h3 class="section-title">Meta da semana</h3>
+
+      @if (weeklyProgress) {
+        <div class="progress-grid">
+          <div class="progress-item">
+            <div class="progress-labels">
+              <span>Horas de estudo</span>
+              <span class="progress-value">{{ weeklyProgress.actual_hours }}h / {{ weeklyProgress.target_hours }}h</span>
+            </div>
+            <p-progressBar
+              [value]="progressValue(weeklyProgress.actual_hours, weeklyProgress.target_hours)"
+              [color]="progressColor(weeklyProgress.actual_hours, weeklyProgress.target_hours)"
+              [showValue]="false">
+            </p-progressBar>
+          </div>
+
+          <div class="progress-item">
+            <div class="progress-labels">
+              <span>Questões</span>
+              <span class="progress-value">{{ weeklyProgress.actual_questions }} / {{ weeklyProgress.target_questions }}</span>
+            </div>
+            <p-progressBar
+              [value]="progressValue(weeklyProgress.actual_questions, weeklyProgress.target_questions)"
+              [color]="progressColor(weeklyProgress.actual_questions, weeklyProgress.target_questions)"
+              [showValue]="false">
+            </p-progressBar>
+          </div>
+
+          <div class="progress-item">
+            <div class="progress-labels">
+              <span>% acertos</span>
+              <span class="progress-value">
+                {{ weeklyProgress.actual_percentage !== null ? (weeklyProgress.actual_percentage + '%') : '—' }}
+                / {{ weeklyProgress.target_percentage }}%
+              </span>
+            </div>
+            <p-progressBar
+              [value]="progressValue(weeklyProgress.actual_percentage ?? 0, weeklyProgress.target_percentage)"
+              [color]="progressColor(weeklyProgress.actual_percentage ?? 0, weeklyProgress.target_percentage)"
+              [showValue]="false">
+            </p-progressBar>
+          </div>
+        </div>
+      } @else {
+        <p class="empty-msg">Nenhum dado de progresso disponível.</p>
+      }
+    </p-card>
+
+    <!-- Mini-calendário semanal -->
+    <p-card styleClass="mb-4">
+      <h3 class="section-title">Esta semana</h3>
+      <div class="week-grid">
+        @for (label of weekDayLabels; track label; let i = $index) {
+          <div
+            class="day-cell"
+            [class.day-today]="isToday(weekDates[i])"
+            [routerLink]="'/agenda'"
+            [queryParams]="{ date: weekDates[i] }">
+            <div class="day-label">{{ label }}</div>
+            <div class="day-number">{{ dayOfMonth(weekDates[i]) }}</div>
+            <div class="day-dots">
+              @for (s of sessionsForDay(weekDates[i]); track s.id) {
+                <span
+                  class="session-dot"
+                  [style.background-color]="statusColor(s.status)"
+                  [title]="s.status === 'late' ? '⚠ Atrasada' : ''">
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <!-- Desempenho por matéria -->
+    <p-card>
+      <h3 class="section-title">Desempenho por matéria</h3>
+
+      @if (subjectsMetrics.length === 0) {
+        <p class="empty-msg text-center">
+          Nenhuma sessão registrada ainda.
+          <a routerLink="/agenda">Agende sua primeira revisão.</a>
+        </p>
+      } @else {
+        @for (subject of subjectsMetrics; track subject.id) {
+          <div class="subject-row" [routerLink]="['/subjects', subject.id]">
+            <div class="subject-header">
+              <span>{{ subject.name }}</span>
+              <span class="subject-pct">
+                {{ subject.accuracy_percentage !== null ? (subject.accuracy_percentage + '%') : '—' }}
+              </span>
+            </div>
+            <p-progressBar
+              [value]="subject.accuracy_percentage ?? 0"
+              [showValue]="false">
+            </p-progressBar>
+          </div>
+        }
+      }
+    </p-card>
+
+  }
 </div>

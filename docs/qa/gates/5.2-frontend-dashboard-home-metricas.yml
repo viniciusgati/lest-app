@@ -1,0 +1,47 @@
+gate: PASS
+story: '5.2'
+title: Frontend — Dashboard Home + Métricas
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-15'
+quality_score: 97
+
+decision: PASS
+summary: >
+  C1 resolvido: day-cell agora usa [routerLink]="'/agenda'" +
+  [queryParams]="{ date: weekDates[i] }". AgendaComponent lê
+  ActivatedRoute.snapshot.queryParamMap.get('date') e aplica
+  initialDate ao FullCalendar quando presente. 2 testes cobrindo
+  o cenário sem e com query param. 403 testes passando, 0 falhas.
+
+evidence:
+  tests:
+    total: 403
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - frontend/src/app/features/home/home/home.html
+    - frontend/src/app/features/agenda/agenda/agenda.ts
+    - frontend/src/app/features/agenda/agenda/agenda.spec.ts
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      AC11: ícone de alerta para sessões late implementado como [title] tooltip.
+      Dot vermelho já indica status visualmente. Aceitável pelo espaço compacto dos dots.
+  - id: N2
+    description: >
+      computeWeekDates usa new Date(today) como cópia a cada iteração — sem mutação.
+      Padrão correto.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  C1 (AC12) corrigido com queryParams no mini-calendário e leitura do
+  initialDate no AgendaComponent. Fix pontual e correto. Story pronta para merge.
