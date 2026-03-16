@@ -1,0 +1,45 @@
+schema: 1
+story: '3.2'
+story_title: 'Frontend — Tela de Metas Semanais'
+gate: PASS
+status_reason: 'Todos os 14 ACs implementados e verificados. 198 testes passando. forkJoin correto, buildWeekLabel sem mutação, progressColor/Value como funções puras testadas. Modificação cross-story em topic-detail.spec.ts válida e necessária.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-15T00:00:00Z'
+
+top_issues: []
+waiver:
+  active: false
+
+quality_score: 100
+expires: '2026-03-29T00:00:00Z'
+
+evidence:
+  tests_reviewed:
+    count: 23
+    breakdown:
+      goals_spec: 16
+      weekly_goal_service_spec: 4
+      user_config_service_spec: 3
+      topic_detail_spec_updated: 9
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth via AuthInterceptor. XSS protegido por binding Angular. Sem dados sensíveis.'
+  performance:
+    status: PASS
+    notes: 'forkJoin minimiza latência. Arrays readonly calculados uma vez. Getter noDaySelected puro.'
+  reliability:
+    status: PASS
+    notes: 'buildWeekLabel não muta today. Spread defensivo em selectedDays. Guard em saveGoal/saveConfig.'
+  maintainability:
+    status: PASS
+    notes: 'progressColor/progressValue funções puras testadas isoladamente. Tipos WeekDay/ScheduleStrategy enforçados. vi.useRealTimers() no afterEach previne leak de timers.'
+
+recommendations:
+  immediate: []
+  future: []

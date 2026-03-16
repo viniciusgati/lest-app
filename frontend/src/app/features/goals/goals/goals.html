@@ -1,3 +1,158 @@
-<div class="placeholder-page">
-  <p>Metas (em breve)</p>
+<div class="goals-page p-4">
+  <p-toast />
+
+  <h2 class="mb-1">Metas da Semana</h2>
+  <p class="text-color-secondary mb-4">{{ weekLabel }}</p>
+
+  @if (loading) {
+    <div class="flex justify-content-center mt-6">
+      <p-progressSpinner />
+    </div>
+  } @else {
+
+    <!-- Progresso atual -->
+    <p-card class="mb-4">
+      <h3 class="mt-0 mb-3">Progresso atual</h3>
+
+      <div class="mb-4">
+        <div class="flex justify-content-between mb-1">
+          <span>⏱ Horas de estudo</span>
+          <span class="text-color-secondary">
+            {{ actualHours }}h / {{ goalForm.value.target_hours }}h
+          </span>
+        </div>
+        <p-progressBar
+          [value]="progressValue(actualHours, goalForm.value.target_hours || 0)"
+          [styleClass]="progressColor(actualHours, goalForm.value.target_hours || 0)"
+        />
+      </div>
+
+      <div class="mb-4">
+        <div class="flex justify-content-between mb-1">
+          <span>📝 Questões</span>
+          <span class="text-color-secondary">
+            {{ actualQuestions }} / {{ goalForm.value.target_questions }} questões
+          </span>
+        </div>
+        <p-progressBar
+          [value]="progressValue(actualQuestions, goalForm.value.target_questions || 0)"
+          [styleClass]="progressColor(actualQuestions, goalForm.value.target_questions || 0)"
+        />
+      </div>
+
+      <div>
+        <div class="flex justify-content-between mb-1">
+          <span>🎯 Percentual de acertos</span>
+          <span class="text-color-secondary">
+            {{ actualPercentage }}% / {{ goalForm.value.target_percentage }}% alvo
+          </span>
+        </div>
+        <p-progressBar
+          [value]="progressValue(actualPercentage, goalForm.value.target_percentage || 0)"
+          [styleClass]="progressColor(actualPercentage, goalForm.value.target_percentage || 0)"
+        />
+      </div>
+    </p-card>
+
+    <!-- Definir metas -->
+    <p-card class="mb-4">
+      <h3 class="mt-0 mb-3">Definir metas</h3>
+      <form [formGroup]="goalForm">
+        <div class="field mb-3">
+          <label>Horas de estudo</label>
+          <p-inputNumber
+            formControlName="target_hours"
+            [min]="0" [max]="168"
+            suffix="h"
+            class="w-full mt-1"
+          />
+        </div>
+        <div class="field mb-3">
+          <label>Questões a realizar</label>
+          <p-inputNumber
+            formControlName="target_questions"
+            [min]="0"
+            suffix=" questões"
+            class="w-full mt-1"
+          />
+        </div>
+        <div class="field mb-3">
+          <label>% alvo de acertos</label>
+          <p-inputNumber
+            formControlName="target_percentage"
+            [min]="0" [max]="100"
+            suffix="%"
+            class="w-full mt-1"
+          />
+          @if (goalForm.get('target_percentage')?.errors?.['max']) {
+            <small class="p-error">Máximo 100%</small>
+          }
+        </div>
+        <p-button
+          label="Salvar meta"
+          icon="pi pi-check"
+          class="w-full"
+          [disabled]="goalForm.invalid"
+          (onClick)="saveGoal()"
+        />
+      </form>
+    </p-card>
+
+    <p-divider />
+
+    <!-- Configuração de programação automática -->
+    <p-card class="mt-4">
+      <h3 class="mt-0 mb-3">Programação automática</h3>
+
+      <div class="mb-4">
+        <label class="block mb-2 font-medium">Dias disponíveis para estudo</label>
+        <div class="flex flex-wrap gap-3">
+          @for (day of days; track day.value) {
+            <div class="flex align-items-center gap-2">
+              <p-checkbox
+                [value]="day.value"
+                [(ngModel)]="selectedDays"
+                [inputId]="day.value"
+              />
+              <label [for]="day.value">{{ day.label }}</label>
+            </div>
+          }
+        </div>
+        @if (noDaySelected) {
+          <small class="p-error block mt-1">Selecione ao menos um dia</small>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label class="block mb-2 font-medium">Estratégia de geração da semana</label>
+        <div class="flex flex-column gap-3">
+          @for (strategy of strategies; track strategy.value) {
+            <div class="flex align-items-start gap-2">
+              <p-radioButton
+                [value]="strategy.value"
+                [(ngModel)]="selectedStrategy"
+                [inputId]="strategy.value"
+                class="mt-1"
+              />
+              <div>
+                <label [for]="strategy.value" class="font-medium cursor-pointer">
+                  {{ strategy.label }}
+                </label>
+                <p class="text-sm text-color-secondary m-0">{{ strategy.description }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <p-button
+        label="Salvar configurações"
+        icon="pi pi-cog"
+        class="w-full"
+        [disabled]="noDaySelected"
+        (onClick)="saveConfig()"
+      />
+    </p-card>
+
+  }
 </div>
