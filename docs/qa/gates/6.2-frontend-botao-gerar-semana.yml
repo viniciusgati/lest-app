@@ -1,0 +1,57 @@
+gate: PASS
+story: '6.2'
+title: Frontend — Botão Gerar Semana
+reviewed_by: Quinn (@qa)
+reviewed_at: '2026-03-15'
+quality_score: 96
+
+decision: PASS
+summary: >
+  ScheduleService, Home e Agenda todos corretos. Botão presente em ambas as
+  views com loading indicator, confirmDialog com mensagem exata do AC2,
+  guard para sem matérias (AC8), aviso não bloqueante de meta (AC9).
+  Lógica de merge de sessões preserva completed corretamente.
+  15 testes Vitest cobrindo os fluxos críticos. 399 testes passando.
+
+evidence:
+  tests:
+    total: 399
+    failures: 0
+    exit_code: 0
+  files_reviewed:
+    - frontend/src/app/core/services/schedule.service.ts
+    - frontend/src/app/core/services/schedule.service.spec.ts
+    - frontend/src/app/features/home/home/home.ts
+    - frontend/src/app/features/home/home/home.html
+    - frontend/src/app/features/home/home/home.spec.ts
+    - frontend/src/app/features/agenda/agenda/agenda.ts
+    - frontend/src/app/features/agenda/agenda/agenda.html
+    - frontend/src/app/features/agenda/agenda/agenda.spec.ts
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_partial: []
+    ac_gaps: []
+
+top_issues: []
+
+informational:
+  - id: N1
+    description: >
+      AC8 fala em "não há temas cadastrados", mas a guard em Home verifica
+      subjectsMetrics.length === 0 (ausência de matérias, não temas).
+      Se usuário tem matéria sem temas, o backend retorna [] e o toast exibe
+      "0 sessões geradas para esta semana" sem mensagem orientativa específica.
+      Divergência de UX leve, comportamento aceitável.
+  - id: N2
+    description: >
+      Toast da Agenda (AC7) usa "X sessões criadas" enquanto a Home usa
+      "X sessões geradas para esta semana". AC7 especifica a segunda variante.
+      Inconsistência de copy menor, sem impacto funcional.
+
+required_actions: []
+
+approval_for_merge: true
+notes: >
+  Story limpa — nenhum required action. N1 e N2 são puramente informativos.
+  Implementação segue padrão establish nos epics anteriores (inject, forkJoin,
+  confirmationService.confirm). ScheduleService mínimo e correto.
