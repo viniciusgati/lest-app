@@ -1,6 +1,5 @@
 [build]
 rootDirectory = "backend"
-dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "bin/rails server -b 0.0.0.0 -p $PORT"
