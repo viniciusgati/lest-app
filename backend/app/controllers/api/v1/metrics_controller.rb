@@ -82,6 +82,52 @@ module Api
         }
       end
 
+      def streak
+        study_dates = StudySession
+          .joins(topic: :subject)
+          .where(subjects: { user_id: current_user.id })
+          .where(status: 'completed')
+          .where('questions_done > 0')
+          .pluck(Arel.sql('DISTINCT DATE(scheduled_date)'))
+          .map(&:to_date)
+          .sort
+          .reverse
+
+        today = Date.today
+        studied_today = study_dates.first == today
+        last_study_date = study_dates.first
+
+        current_streak = 0
+        check_date = studied_today ? today : today - 1
+        study_set = study_dates.to_set
+
+        while study_set.include?(check_date)
+          current_streak += 1
+          check_date -= 1
+        end
+
+        longest = 0
+        current = 0
+        prev_date = nil
+
+        study_dates.reverse.each do |date|
+          if prev_date.nil? || date == prev_date + 1
+            current += 1
+            longest = [longest, current].max
+          else
+            current = 1
+          end
+          prev_date = date
+        end
+
+        render json: {
+          current_streak: current_streak,
+          longest_streak: longest,
+          last_study_date: last_study_date&.iso8601,
+          studied_today: studied_today
+        }
+      end
+
       def weekly_progress
         week_start = Date.today.beginning_of_week(:monday)
         week_end   = week_start + 6.days

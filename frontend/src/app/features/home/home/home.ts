@@ -14,8 +14,9 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetricsService } from '../../../core/services/metrics.service';
 import { StudySessionService } from '../../../core/services/study-session.service';
 import { ScheduleService } from '../../../core/services/schedule.service';
-import { SubjectMetric, WeeklyProgress, MetricsHistory } from '../../../core/models/metrics.model';
+import { SubjectMetric, WeeklyProgress, MetricsHistory, StreakData } from '../../../core/models/metrics.model';
 import { StudySession } from '../../../core/models/study-session.model';
+import { StreakWidget } from '../../../shared/components/streak-widget/streak-widget';
 
 const STATUS_COLORS: Record<string, string> = {
   scheduled: '#3b82f6',
@@ -29,7 +30,8 @@ const STATUS_COLORS: Record<string, string> = {
   imports: [
     CommonModule, RouterModule,
     CardModule, ProgressBarModule, ProgressSpinnerModule,
-    ButtonModule, ToastModule, ConfirmDialogModule, MessageModule, ChartModule
+    ButtonModule, ToastModule, ConfirmDialogModule, MessageModule, ChartModule,
+    StreakWidget
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './home.html',
@@ -42,6 +44,7 @@ export class Home implements OnInit {
   weeklyProgress: WeeklyProgress | null = null;
   subjectsMetrics: SubjectMetric[] = [];
   weekSessions: StudySession[] = [];
+  streakData: StreakData | null = null;
   historyChartData: Record<string, unknown> | null = null;
   historyChartOptions = {
     responsive: true,
@@ -70,14 +73,16 @@ export class Home implements OnInit {
       progress: this.metricsService.getWeeklyProgress(),
       subjects: this.metricsService.getSubjectsMetrics(),
       sessions: this.sessionService.getAll({ date_from: dateFrom, date_to: dateTo }),
-      history: this.metricsService.getHistory()
+      history: this.metricsService.getHistory(),
+      streak: this.metricsService.getStreak()
     }).subscribe({
-      next: ({ progress, subjects, sessions, history }) => {
+      next: ({ progress, subjects, sessions, history, streak }) => {
         this.weeklyProgress = progress;
         this.hasGoal = (progress?.target_hours ?? 0) > 0;
         this.subjectsMetrics = subjects;
         this.weekSessions = sessions.data;
         this.historyChartData = this.buildChartData(history);
+        this.streakData = streak;
         this.loading = false;
       },
       error: () => { this.loading = false; }

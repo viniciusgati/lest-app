@@ -30,3 +30,10 @@ export interface SubjectHistory {
 export interface MetricsHistory {
   subjects: SubjectHistory[];
 }
+
+export interface StreakData {
+  current_streak: number;
+  longest_streak: number;
+  last_study_date: string | null;
+  studied_today: boolean;
+}

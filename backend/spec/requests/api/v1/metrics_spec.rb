@@ -290,4 +290,69 @@ RSpec.describe 'Api::V1::Metrics', type: :request do
       expect(week_start).to eq(monday_this_week.iso8601)
     end
   end
+
+  describe 'GET /api/v1/metrics/streak' do
+    it 'retorna 401 sem token' do
+      get '/api/v1/metrics/streak'
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'retorna streak 0 quando não há sessões completadas' do
+      get '/api/v1/metrics/streak', headers: headers
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body['current_streak']).to eq(0)
+      expect(body['longest_streak']).to eq(0)
+      expect(body['last_study_date']).to be_nil
+      expect(body['studied_today']).to be false
+    end
+
+    it 'calcula streak de N dias consecutivos' do
+      3.times do |i|
+        create(:study_session, :completed, topic: topic,
+               scheduled_date: Date.today - i.days, questions_done: 5, questions_correct: 3)
+      end
+      get '/api/v1/metrics/streak', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['current_streak']).to eq(3)
+      expect(body['studied_today']).to be true
+    end
+
+    it 'quebra streak quando há gap' do
+      # Dia de hoje e 3 dias atrás (gap de 2 dias no meio)
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: Date.today, questions_done: 5, questions_correct: 3)
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: Date.today - 3.days, questions_done: 5, questions_correct: 3)
+      get '/api/v1/metrics/streak', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['current_streak']).to eq(1)
+    end
+
+    it 'calcula longest_streak corretamente' do
+      # 5 dias consecutivos há 2 semanas
+      5.times do |i|
+        create(:study_session, :completed, topic: topic,
+               scheduled_date: Date.today - 14.days + i.days, questions_done: 5, questions_correct: 3)
+      end
+      # 2 dias consecutivos agora
+      2.times do |i|
+        create(:study_session, :completed, topic: topic,
+               scheduled_date: Date.today - i.days, questions_done: 5, questions_correct: 3)
+      end
+      get '/api/v1/metrics/streak', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['longest_streak']).to eq(5)
+      expect(body['current_streak']).to eq(2)
+    end
+
+    it 'indica studied_today corretamente' do
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: Date.today, questions_done: 5, questions_correct: 3)
+      get '/api/v1/metrics/streak', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['studied_today']).to be true
+      expect(body['last_study_date']).to eq(Date.today.iso8601)
+    end
+  end
 end

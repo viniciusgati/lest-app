@@ -7,7 +7,7 @@ import { Home } from './home';
 import { MetricsService } from '../../../core/services/metrics.service';
 import { StudySessionService } from '../../../core/services/study-session.service';
 import { ScheduleService } from '../../../core/services/schedule.service';
-import { SubjectMetric, WeeklyProgress, MetricsHistory } from '../../../core/models/metrics.model';
+import { SubjectMetric, WeeklyProgress, MetricsHistory, StreakData } from '../../../core/models/metrics.model';
 import { StudySession } from '../../../core/models/study-session.model';
 
 const MOCK_PROGRESS: WeeklyProgress = {
@@ -38,16 +38,18 @@ const LATE_SESSION: StudySession = {
 describe('Home', () => {
   let fixture: ComponentFixture<Home>;
   let component: Home;
-  let mockMetrics: { getWeeklyProgress: ReturnType<typeof vi.fn>; getSubjectsMetrics: ReturnType<typeof vi.fn>; getHistory: ReturnType<typeof vi.fn> };
+  let mockMetrics: { getWeeklyProgress: ReturnType<typeof vi.fn>; getSubjectsMetrics: ReturnType<typeof vi.fn>; getHistory: ReturnType<typeof vi.fn>; getStreak: ReturnType<typeof vi.fn> };
   let mockSessions: { getAll: ReturnType<typeof vi.fn> };
   let mockSchedule: { generate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     const MOCK_HISTORY: MetricsHistory = { subjects: [] };
+    const MOCK_STREAK: StreakData = { current_streak: 5, longest_streak: 10, last_study_date: '2026-03-22', studied_today: false };
     mockMetrics = {
       getWeeklyProgress: vi.fn().mockReturnValue(of(MOCK_PROGRESS)),
       getSubjectsMetrics: vi.fn().mockReturnValue(of([...MOCK_SUBJECTS])),
-      getHistory: vi.fn().mockReturnValue(of(MOCK_HISTORY))
+      getHistory: vi.fn().mockReturnValue(of(MOCK_HISTORY)),
+      getStreak: vi.fn().mockReturnValue(of(MOCK_STREAK))
     };
     mockSessions = {
       getAll: vi.fn().mockReturnValue(of({ data: [MOCK_SESSION], meta: { page: 1, per_page: 20, total: 1, total_pages: 1 } }))
