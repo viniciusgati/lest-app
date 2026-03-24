@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_24_013841) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_24_015218) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -43,7 +43,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_24_013841) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.time "start_time"
+    t.index ["status", "scheduled_date"], name: "idx_sessions_status_date"
     t.index ["topic_id", "scheduled_date"], name: "index_study_sessions_on_topic_id_and_scheduled_date"
+    t.index ["topic_id", "status", "scheduled_date"], name: "idx_sessions_topic_status_date"
     t.index ["topic_id"], name: "index_study_sessions_on_topic_id"
   end
 
@@ -68,6 +70,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_24_013841) do
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
     t.index ["discarded_at"], name: "index_topics_on_discarded_at"
+    t.index ["subject_id", "next_review"], name: "idx_topics_subject_next_review"
     t.index ["subject_id"], name: "index_topics_on_subject_id"
   end
 

@@ -36,6 +36,7 @@ gem "bootsnap", require: false
 gem "rack-cors"
 gem 'pagy', '~> 9.0'
 gem 'discard', '~> 1.4'
+gem 'rack-attack', '~> 6.7'
 gem "devise"
 gem "devise-jwt"
 
