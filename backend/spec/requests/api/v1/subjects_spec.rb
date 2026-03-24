@@ -67,24 +67,47 @@ RSpec.describe 'Api::V1::Subjects', type: :request do
   end
 
   describe 'DELETE /api/v1/subjects/:id' do
-    it 'remove matéria do usuário' do
+    it 'faz soft delete da matéria (retorna 204)' do
       subject = create(:subject, user: user)
       delete "/api/v1/subjects/#{subject.id}", headers: headers
       expect(response).to have_http_status(:no_content)
-      expect(Subject.find_by(id: subject.id)).to be_nil
+    end
+
+    it 'preserva registro no banco com discarded_at preenchido' do
+      subject = create(:subject, user: user)
+      delete "/api/v1/subjects/#{subject.id}", headers: headers
+      discarded = Subject.with_discarded.find_by(id: subject.id)
+      expect(discarded).not_to be_nil
+      expect(discarded.discarded_at).not_to be_nil
+    end
+
+    it 'matéria descartada não aparece na listagem' do
+      subject = create(:subject, user: user)
+      delete "/api/v1/subjects/#{subject.id}", headers: headers
+      get '/api/v1/subjects', headers: headers
+      expect(JSON.parse(response.body).map { |s| s['id'] }).not_to include(subject.id)
+    end
+
+    it 'faz soft delete em cascata nos temas' do
+      subject = create(:subject, user: user)
+      topic = create(:topic, subject: subject)
+      delete "/api/v1/subjects/#{subject.id}", headers: headers
+      discarded_topic = Topic.with_discarded.find_by(id: topic.id)
+      expect(discarded_topic.discarded_at).not_to be_nil
+    end
+
+    it 'sessions associadas a temas descartados permanecem no banco' do
+      subject = create(:subject, user: user)
+      topic = create(:topic, subject: subject)
+      session = create(:study_session, topic: topic)
+      delete "/api/v1/subjects/#{subject.id}", headers: headers
+      expect(StudySession.find_by(id: session.id)).not_to be_nil
     end
 
     it 'retorna 404 para matéria de outro usuário' do
       other_subject = create(:subject)
       delete "/api/v1/subjects/#{other_subject.id}", headers: headers
       expect(response).to have_http_status(:not_found)
-    end
-
-    it 'remove temas em cascata' do
-      subject = create(:subject, user: user)
-      topic = create(:topic, subject: subject)
-      delete "/api/v1/subjects/#{subject.id}", headers: headers
-      expect(Topic.find_by(id: topic.id)).to be_nil
     end
   end
 end

@@ -26,7 +26,10 @@ module Api
       end
 
       def destroy
-        @subject.destroy
+        ActiveRecord::Base.transaction do
+          @subject.topics.discard_all
+          @subject.discard
+        end
         head :no_content
       end
 

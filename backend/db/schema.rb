@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_24_013154) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_24_013841) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_24_013154) do
     t.string "name", limit: 100, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_subjects_on_discarded_at"
     t.index ["user_id"], name: "index_subjects_on_user_id"
   end
 
@@ -64,6 +66,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_24_013154) do
     t.date "next_review", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_topics_on_discarded_at"
     t.index ["subject_id"], name: "index_topics_on_subject_id"
   end
 

@@ -1,4 +1,7 @@
 class Topic < ApplicationRecord
+  include Discard::Model
+  default_scope { kept }
+
   belongs_to :subject
   has_many :study_sessions, dependent: :destroy
 

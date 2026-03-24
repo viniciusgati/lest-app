@@ -40,7 +40,7 @@ module Api
       end
 
       def destroy
-        @topic.destroy
+        @topic.discard
         head :no_content
       end
 

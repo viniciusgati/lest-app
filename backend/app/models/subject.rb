@@ -1,4 +1,7 @@
 class Subject < ApplicationRecord
+  include Discard::Model
+  default_scope { kept }
+
   belongs_to :user
   has_many :topics, dependent: :destroy
 

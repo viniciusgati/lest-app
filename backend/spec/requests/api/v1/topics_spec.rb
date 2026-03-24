@@ -108,11 +108,26 @@ RSpec.describe 'Api::V1::Topics', type: :request do
   end
 
   describe 'DELETE /api/v1/subjects/:subject_id/topics/:id' do
-    it 'remove tema' do
+    it 'faz soft delete do tema (retorna 204)' do
       topic = create(:topic, subject: subject_record)
       delete "/api/v1/subjects/#{subject_record.id}/topics/#{topic.id}", headers: headers
       expect(response).to have_http_status(:no_content)
-      expect(Topic.find_by(id: topic.id)).to be_nil
+    end
+
+    it 'preserva registro no banco com discarded_at preenchido' do
+      topic = create(:topic, subject: subject_record)
+      delete "/api/v1/subjects/#{subject_record.id}/topics/#{topic.id}", headers: headers
+      discarded = Topic.with_discarded.find_by(id: topic.id)
+      expect(discarded).not_to be_nil
+      expect(discarded.discarded_at).not_to be_nil
+    end
+
+    it 'tema descartado não aparece na listagem' do
+      topic = create(:topic, subject: subject_record)
+      delete "/api/v1/subjects/#{subject_record.id}/topics/#{topic.id}", headers: headers
+      get "/api/v1/subjects/#{subject_record.id}/topics", headers: headers
+      body = JSON.parse(response.body)
+      expect(body['data'].map { |t| t['id'] }).not_to include(topic.id)
     end
 
     it 'retorna 404 para tema de outra matéria' do
