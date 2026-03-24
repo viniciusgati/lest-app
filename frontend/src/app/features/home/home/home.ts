@@ -9,11 +9,12 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageModule } from 'primeng/message';
+import { ChartModule } from 'primeng/chart';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetricsService } from '../../../core/services/metrics.service';
 import { StudySessionService } from '../../../core/services/study-session.service';
 import { ScheduleService } from '../../../core/services/schedule.service';
-import { SubjectMetric, WeeklyProgress } from '../../../core/models/metrics.model';
+import { SubjectMetric, WeeklyProgress, MetricsHistory } from '../../../core/models/metrics.model';
 import { StudySession } from '../../../core/models/study-session.model';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -28,7 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
   imports: [
     CommonModule, RouterModule,
     CardModule, ProgressBarModule, ProgressSpinnerModule,
-    ButtonModule, ToastModule, ConfirmDialogModule, MessageModule
+    ButtonModule, ToastModule, ConfirmDialogModule, MessageModule, ChartModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './home.html',
@@ -41,6 +42,14 @@ export class Home implements OnInit {
   weeklyProgress: WeeklyProgress | null = null;
   subjectsMetrics: SubjectMetric[] = [];
   weekSessions: StudySession[] = [];
+  historyChartData: Record<string, unknown> | null = null;
+  historyChartOptions = {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { min: 0, max: 100, ticks: { callback: (v: number) => v + '%' } }
+    }
+  };
 
   readonly weekDayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   weekDates: string[] = [];
@@ -60,13 +69,15 @@ export class Home implements OnInit {
     forkJoin({
       progress: this.metricsService.getWeeklyProgress(),
       subjects: this.metricsService.getSubjectsMetrics(),
-      sessions: this.sessionService.getAll({ date_from: dateFrom, date_to: dateTo })
+      sessions: this.sessionService.getAll({ date_from: dateFrom, date_to: dateTo }),
+      history: this.metricsService.getHistory()
     }).subscribe({
-      next: ({ progress, subjects, sessions }) => {
+      next: ({ progress, subjects, sessions, history }) => {
         this.weeklyProgress = progress;
         this.hasGoal = (progress?.target_hours ?? 0) > 0;
         this.subjectsMetrics = subjects;
         this.weekSessions = sessions.data;
+        this.historyChartData = this.buildChartData(history);
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -144,6 +155,31 @@ export class Home implements OnInit {
     if (current >= target) return 'success';
     if (current > 0) return 'warning';
     return '';
+  }
+
+  buildChartData(history: MetricsHistory): Record<string, unknown> | null {
+    const withData = history.subjects.filter(s => s.weeks.length >= 2);
+    if (withData.length === 0) return null;
+
+    const allWeeks = [...new Set(
+      history.subjects.flatMap(s => s.weeks.map(w => w.week_start))
+    )].sort();
+
+    const colors = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444'];
+    return {
+      labels: allWeeks.map(w => new Date(w + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })),
+      datasets: withData.map((subject, i) => ({
+        label: subject.name,
+        data: allWeeks.map(week => {
+          const found = subject.weeks.find(w => w.week_start === week);
+          return found !== undefined ? Math.round(found.accuracy * 100) : null;
+        }),
+        borderColor: colors[i % colors.length],
+        backgroundColor: colors[i % colors.length] + '33',
+        tension: 0.3,
+        spanGaps: true
+      }))
+    };
   }
 
   private todayStr(): string {

@@ -41,6 +41,47 @@ module Api
         render json: { error: 'Not found' }, status: :not_found
       end
 
+      def history
+        weeks = [[( params[:weeks] || 8).to_i, 26].min, 1].max
+        since_date = weeks.weeks.ago.beginning_of_week(:monday)
+
+        results = StudySession
+          .joins(topic: :subject)
+          .where(subjects: { user_id: current_user.id })
+          .where(status: 'completed')
+          .where('study_sessions.scheduled_date >= ?', since_date)
+          .where('study_sessions.questions_done > 0')
+          .group(
+            "DATE_TRUNC('week', study_sessions.scheduled_date)",
+            'subjects.id',
+            'subjects.name'
+          )
+          .select(
+            "DATE_TRUNC('week', study_sessions.scheduled_date) AS week_start",
+            'subjects.id AS subject_id',
+            'subjects.name AS subject_name',
+            'SUM(study_sessions.questions_correct)::float / SUM(study_sessions.questions_done) AS accuracy',
+            'COUNT(*) AS sessions_count'
+          )
+
+        by_subject = results.group_by(&:subject_id)
+        render json: {
+          subjects: by_subject.map do |_id, rows|
+            {
+              id: rows.first.subject_id,
+              name: rows.first.subject_name,
+              weeks: rows.map { |r|
+                {
+                  week_start: r.week_start.to_date.iso8601,
+                  accuracy: r.accuracy.round(4),
+                  sessions_count: r.sessions_count.to_i
+                }
+              }.sort_by { |w| w[:week_start] }
+            }
+          end
+        }
+      end
+
       def weekly_progress
         week_start = Date.today.beginning_of_week(:monday)
         week_end   = week_start + 6.days

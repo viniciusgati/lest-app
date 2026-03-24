@@ -104,6 +104,14 @@
       </div>
     </p-card>
 
+    <!-- Evolução histórica (8 semanas) -->
+    @if (historyChartData) {
+      <p-card styleClass="mb-4">
+        <h3 class="section-title">Evolução por matéria (8 semanas)</h3>
+        <p-chart type="line" [data]="historyChartData" [options]="historyChartOptions" height="250px"></p-chart>
+      </p-card>
+    }
+
     <!-- Desempenho por matéria -->
     <p-card>
       <h3 class="section-title">Desempenho por matéria</h3>

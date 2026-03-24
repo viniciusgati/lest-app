@@ -43,6 +43,7 @@ Rails.application.routes.draw do
         get :subjects
         get 'subjects/:subject_id/topics', action: :subject_topics
         get :weekly_progress
+        get :history
       end
 
       post 'schedule/generate', to: 'schedule#generate'

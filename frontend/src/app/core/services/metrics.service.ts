@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SubjectMetric, WeeklyProgress } from '../models/metrics.model';
+import { SubjectMetric, WeeklyProgress, MetricsHistory } from '../models/metrics.model';
 
 @Injectable({ providedIn: 'root' })
 export class MetricsService {
@@ -14,5 +14,9 @@ export class MetricsService {
 
   getWeeklyProgress(): Observable<WeeklyProgress> {
     return this.http.get<WeeklyProgress>(`${this.base}/weekly_progress`);
+  }
+
+  getHistory(weeks = 8): Observable<MetricsHistory> {
+    return this.http.get<MetricsHistory>(`${this.base}/history`, { params: { weeks: weeks.toString() } });
   }
 }

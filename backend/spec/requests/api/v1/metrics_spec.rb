@@ -213,4 +213,81 @@ RSpec.describe 'Api::V1::Metrics', type: :request do
       expect(body['actual_questions']).to eq(15)
     end
   end
+
+  describe 'GET /api/v1/metrics/history' do
+    let(:monday_this_week) { Date.today.beginning_of_week(:monday) }
+
+    it 'retorna 401 sem token' do
+      get '/api/v1/metrics/history'
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'retorna array vazio quando não há sessões completadas' do
+      get '/api/v1/metrics/history', headers: headers
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body['subjects']).to be_empty
+    end
+
+    it 'calcula accuracy correta por semana' do
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: monday_this_week,
+             questions_done: 10, questions_correct: 8)
+      get '/api/v1/metrics/history', headers: headers
+      body = JSON.parse(response.body)
+      subj = body['subjects'].first
+      expect(subj['id']).to eq(subject_record.id)
+      expect(subj['weeks'].first['accuracy']).to eq(0.8)
+      expect(subj['weeks'].first['sessions_count']).to eq(1)
+    end
+
+    it 'retorna múltiplas matérias com histórico separado' do
+      subject2 = create(:subject, user: user)
+      topic2 = create(:topic, subject: subject2)
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: monday_this_week, questions_done: 10, questions_correct: 6)
+      create(:study_session, :completed, topic: topic2,
+             scheduled_date: monday_this_week, questions_done: 10, questions_correct: 9)
+      get '/api/v1/metrics/history', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['subjects'].length).to eq(2)
+    end
+
+    it 'respeita o parâmetro weeks' do
+      # Sessão há 3 semanas atrás
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: 3.weeks.ago.beginning_of_week(:monday),
+             questions_done: 10, questions_correct: 5)
+      # Sessão desta semana
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: monday_this_week,
+             questions_done: 10, questions_correct: 5)
+
+      get '/api/v1/metrics/history', params: { weeks: 2 }, headers: headers
+      body = JSON.parse(response.body)
+      # Com weeks=2, só deve aparecer a sessão desta semana
+      subj = body['subjects'].first
+      expect(subj['weeks'].length).to eq(1)
+    end
+
+    it 'ignora sessões sem questions_done' do
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: monday_this_week, questions_done: 0, questions_correct: 0)
+      get '/api/v1/metrics/history', headers: headers
+      body = JSON.parse(response.body)
+      expect(body['subjects']).to be_empty
+    end
+
+    it 'week_start é sempre segunda-feira' do
+      # Sessão numa quarta-feira
+      wednesday = monday_this_week + 2.days
+      create(:study_session, :completed, topic: topic,
+             scheduled_date: wednesday, questions_done: 5, questions_correct: 3)
+      get '/api/v1/metrics/history', headers: headers
+      body = JSON.parse(response.body)
+      week_start = body['subjects'].first['weeks'].first['week_start']
+      expect(Date.parse(week_start).wday).to eq(1) # 1 = segunda-feira
+      expect(week_start).to eq(monday_this_week.iso8601)
+    end
+  end
 end

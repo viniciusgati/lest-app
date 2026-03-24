@@ -14,3 +14,19 @@ export interface WeeklyProgress {
   target_questions: number;
   target_percentage: number;
 }
+
+export interface WeekData {
+  week_start: string;
+  accuracy: number;
+  sessions_count: number;
+}
+
+export interface SubjectHistory {
+  id: number;
+  name: string;
+  weeks: WeekData[];
+}
+
+export interface MetricsHistory {
+  subjects: SubjectHistory[];
+}
