@@ -10,6 +10,9 @@
 
   <!-- Step 1: Formulário de resultado -->
   @if (step === 1) {
+    <div class="mb-3">
+      <app-study-timer (timerStopped)="onTimerStopped($event)"></app-study-timer>
+    </div>
     <form [formGroup]="resultForm" class="result-form">
       <div class="field">
         <label for="actual_minutes">Tempo real (min)</label>

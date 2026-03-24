@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { StudySessionService } from '../../../core/services/study-session.service';
 import { StudySession, StudySessionResult } from '../../../core/models/study-session.model';
+import { StudyTimer } from '../../../shared/components/study-timer/study-timer';
 
 export interface SessionCompletedEvent {
   completedSession: StudySession;
@@ -29,7 +30,8 @@ function correctsLteDoneValidator(group: AbstractControl): ValidationErrors | nu
   imports: [
     CommonModule, ReactiveFormsModule, FormsModule,
     ButtonModule, DialogModule, InputNumberModule,
-    CardModule, DatePickerModule, ProgressSpinnerModule, ToastModule
+    CardModule, DatePickerModule, ProgressSpinnerModule, ToastModule,
+    StudyTimer
   ],
   providers: [MessageService],
   templateUrl: './complete-session.html'
@@ -87,6 +89,13 @@ export class CompleteSession {
     today.setHours(0, 0, 0, 0);
     const next = new Date(this.nextSession.scheduled_date + 'T00:00:00');
     return Math.round((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  onTimerStopped(minutes: number): void {
+    const ctrl = this.resultForm.get('actual_minutes');
+    if (!ctrl?.value) {
+      ctrl?.setValue(minutes);
+    }
   }
 
   submit(): void {
