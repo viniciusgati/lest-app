@@ -1,5 +1,4 @@
 [deploy]
-startCommand = "bin/rails server -b 0.0.0.0 -p $PORT"
 healthcheckPath = "/up"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
