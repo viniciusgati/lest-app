@@ -113,9 +113,9 @@ export class Agenda implements OnInit {
 
   loadSessions(): void {
     this.loading = true;
-    this.sessionService.getAll().subscribe({
-      next: (sessions) => {
-        this.sessions = sessions;
+    this.sessionService.getAll({ page: 1, per_page: 100 }).subscribe({
+      next: (response) => {
+        this.sessions = response.data;
         this.updateCalendarEvents();
         this.loading = false;
       },
@@ -142,7 +142,7 @@ export class Agenda implements OnInit {
     this.scheduleForm.patchValue({ topic_id: null });
     this.topics = [];
     if (!subjectId) return;
-    this.topicService.getAll(subjectId).subscribe({
+    this.topicService.getAllData(subjectId).subscribe({
       next: (topics) => (this.topics = topics)
     });
   }
@@ -178,7 +178,7 @@ export class Agenda implements OnInit {
 
     forkJoin(
       this.subjects.map(subj =>
-        this.topicService.getAll(subj.id).pipe(map(topics => ({ subj, topics })))
+        this.topicService.getAllData(subj.id).pipe(map(topics => ({ subj, topics })))
       )
     ).subscribe({
       next: (results) => {

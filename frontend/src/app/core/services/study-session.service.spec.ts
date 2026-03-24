@@ -43,15 +43,21 @@ describe('StudySessionService', () => {
   });
 
   describe('getAll()', () => {
-    it('should GET /api/v1/study_sessions', () => {
-      service.getAll().subscribe(sessions => {
-        expect(sessions.length).toBe(1);
-        expect(sessions[0].id).toBe(1);
+    const mockPaginated = {
+      data: [mockSession],
+      meta: { page: 1, per_page: 20, total: 1, total_pages: 1 }
+    };
+
+    it('should GET /api/v1/study_sessions returning paginated response', () => {
+      service.getAll().subscribe(response => {
+        expect(response.data.length).toBe(1);
+        expect(response.data[0].id).toBe(1);
+        expect(response.meta.total).toBe(1);
       });
 
       const req = httpMock.expectOne(r => r.url === '/api/v1/study_sessions');
       expect(req.request.method).toBe('GET');
-      req.flush([mockSession]);
+      req.flush(mockPaginated);
     });
 
     it('should pass status filter as query param', () => {
@@ -61,7 +67,7 @@ describe('StudySessionService', () => {
         r.url === '/api/v1/study_sessions' && r.params.get('status') === 'completed'
       );
       expect(req.request.method).toBe('GET');
-      req.flush([]);
+      req.flush({ data: [], meta: { page: 1, per_page: 20, total: 0, total_pages: 0 } });
     });
 
     it('should pass date_from filter as query param', () => {
@@ -70,7 +76,19 @@ describe('StudySessionService', () => {
       const req = httpMock.expectOne(r =>
         r.url === '/api/v1/study_sessions' && r.params.get('date_from') === '2026-03-01'
       );
-      req.flush([]);
+      req.flush({ data: [], meta: { page: 1, per_page: 20, total: 0, total_pages: 0 } });
+    });
+  });
+
+  describe('getAllData()', () => {
+    it('should return only data array', () => {
+      service.getAllData().subscribe(sessions => {
+        expect(sessions.length).toBe(1);
+        expect(sessions[0].id).toBe(1);
+      });
+
+      const req = httpMock.expectOne(r => r.url === '/api/v1/study_sessions');
+      req.flush({ data: [mockSession], meta: { page: 1, per_page: 20, total: 1, total_pages: 1 } });
     });
   });
 

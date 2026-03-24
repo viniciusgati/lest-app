@@ -29,8 +29,9 @@ describe('SubjectDetail', () => {
   let mockSubjectService: { getOne: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    const paginatedTopics = { data: [...BASE_TOPICS], meta: { page: 1, per_page: 50, total: 2, total_pages: 1 } };
     mockTopicService = {
-      getAll: vi.fn().mockReturnValue(of([...BASE_TOPICS])),
+      getAll: vi.fn().mockReturnValue(of(paginatedTopics)),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn()
@@ -64,7 +65,7 @@ describe('SubjectDetail', () => {
   });
 
   it('carrega temas ao iniciar', () => {
-    expect(mockTopicService.getAll).toHaveBeenCalledWith(1);
+    expect(mockTopicService.getAll).toHaveBeenCalledWith(1, { page: 1, per_page: 50 });
     expect(component.topics.length).toBe(2);
   });
 
@@ -74,7 +75,7 @@ describe('SubjectDetail', () => {
   });
 
   it('exibe estado vazio quando não há temas', () => {
-    mockTopicService.getAll.mockReturnValue(of([]));
+    mockTopicService.getAll.mockReturnValue(of({ data: [], meta: { page: 1, per_page: 50, total: 0, total_pages: 0 } }));
     component.loadTopics();
     expect(component.topics.length).toBe(0);
   });

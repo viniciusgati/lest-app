@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  include Pagy::Backend
+
   before_action :set_default_format
 
   def fallback_index_html

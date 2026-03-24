@@ -48,7 +48,7 @@ describe('Home', () => {
       getSubjectsMetrics: vi.fn().mockReturnValue(of([...MOCK_SUBJECTS]))
     };
     mockSessions = {
-      getAll: vi.fn().mockReturnValue(of([MOCK_SESSION]))
+      getAll: vi.fn().mockReturnValue(of({ data: [MOCK_SESSION], meta: { page: 1, per_page: 20, total: 1, total_pages: 1 } }))
     };
     mockSchedule = {
       generate: vi.fn().mockReturnValue(of([]))
@@ -199,7 +199,7 @@ describe('Home', () => {
 
   describe('sessão atrasada', () => {
     it('statusColor retorna vermelho para sessão late', () => {
-      mockSessions.getAll.mockReturnValue(of([LATE_SESSION]));
+      mockSessions.getAll.mockReturnValue(of({ data: [LATE_SESSION], meta: { page: 1, per_page: 20, total: 1, total_pages: 1 } }));
       component.ngOnInit();
       const sessions = component.sessionsForDay(todayStr);
       expect(sessions[0].status).toBe('late');

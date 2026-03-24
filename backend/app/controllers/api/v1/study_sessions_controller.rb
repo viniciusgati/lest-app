@@ -5,14 +5,25 @@ module Api
 
       def index
         sessions = user_sessions.order(scheduled_date: :asc)
-        if params[:status].present? && params[:status] == 'completed'
-          sessions = sessions.where(status: 'completed')
-        end
+        sessions = apply_status_filter(sessions)
         sessions = sessions.where(scheduled_date: params[:date_from]..) if params[:date_from].present?
         sessions = sessions.where(scheduled_date: ..params[:date_to]) if params[:date_to].present?
-        result = sessions.map { |s| session_json(s) }
-        result = result.select { |s| s['status'] == params[:status] } if params[:status].present?
-        render json: result
+
+        per = (params[:per_page] || 20).to_i.clamp(1, 100)
+        @pagy, paginated = pagy(sessions, limit: per)
+
+        response.set_header('X-Total', @pagy.count.to_s)
+        response.set_header('X-Total-Pages', @pagy.pages.to_s)
+
+        render json: {
+          data: paginated.map { |s| session_json(s) },
+          meta: {
+            page: @pagy.page,
+            per_page: @pagy.limit,
+            total: @pagy.count,
+            total_pages: @pagy.pages
+          }
+        }
       end
 
       def create
@@ -90,6 +101,19 @@ module Api
 
       def session_json(session)
         session.as_json.merge('status' => session.status_display)
+      end
+
+      def apply_status_filter(sessions)
+        case params[:status]
+        when 'completed'
+          sessions.where(status: 'completed')
+        when 'late'
+          sessions.where(status: 'scheduled').where('scheduled_date < ?', Date.today)
+        when 'scheduled'
+          sessions.where(status: 'scheduled').where('scheduled_date >= ?', Date.today)
+        else
+          sessions
+        end
       end
 
       def session_params

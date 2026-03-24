@@ -5,7 +5,21 @@ module Api
       before_action :set_topic, only: [:update, :destroy]
 
       def index
-        render json: @subject.topics.order(:name)
+        per = (params[:per_page] || 50).to_i.clamp(1, 100)
+        @pagy, topics = pagy(@subject.topics.order(:name), limit: per)
+
+        response.set_header('X-Total', @pagy.count.to_s)
+        response.set_header('X-Total-Pages', @pagy.pages.to_s)
+
+        render json: {
+          data: topics,
+          meta: {
+            page: @pagy.page,
+            per_page: @pagy.limit,
+            total: @pagy.count,
+            total_pages: @pagy.pages
+          }
+        }
       end
 
       def create

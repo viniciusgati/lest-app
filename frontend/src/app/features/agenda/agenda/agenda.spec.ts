@@ -53,12 +53,12 @@ describe('Agenda', () => {
     complete: ReturnType<typeof vi.fn>;
   };
   let mockSubjectService: { getAll: ReturnType<typeof vi.fn> };
-  let mockTopicService: { getAll: ReturnType<typeof vi.fn> };
+  let mockTopicService: { getAllData: ReturnType<typeof vi.fn> };
   let mockScheduleService: { generate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockSessionService = {
-      getAll: vi.fn().mockReturnValue(of([MOCK_SESSION])),
+      getAll: vi.fn().mockReturnValue(of({ data: [MOCK_SESSION], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } })),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -70,7 +70,7 @@ describe('Agenda', () => {
     };
 
     mockTopicService = {
-      getAll: vi.fn().mockReturnValue(of([...MOCK_TOPICS]))
+      getAllData: vi.fn().mockReturnValue(of([...MOCK_TOPICS]))
     };
     mockScheduleService = {
       generate: vi.fn().mockReturnValue(of([]))
@@ -167,7 +167,7 @@ describe('Agenda', () => {
   describe('seleção de matéria no form', () => {
     it('carrega temas ao selecionar matéria', () => {
       component.onSubjectChange(1);
-      expect(mockTopicService.getAll).toHaveBeenCalledWith(1);
+      expect(mockTopicService.getAllData).toHaveBeenCalledWith(1);
       expect(component.topics.length).toBe(1);
     });
 
@@ -181,7 +181,7 @@ describe('Agenda', () => {
       component.topics = [...MOCK_TOPICS];
       component.onSubjectChange(null);
       expect(component.topics.length).toBe(0);
-      expect(mockTopicService.getAll).not.toHaveBeenCalled();
+      expect(mockTopicService.getAllData).not.toHaveBeenCalled();
     });
   });
 
@@ -245,20 +245,20 @@ describe('Agenda', () => {
 
     it('resolve topic e subject via forkJoin ao abrir detalhe', () => {
       component.openSessionDetail(MOCK_SESSION);
-      expect(mockTopicService.getAll).toHaveBeenCalledWith(MOCK_SUBJECTS[0].id);
+      expect(mockTopicService.getAllData).toHaveBeenCalledWith(MOCK_SUBJECTS[0].id);
       expect(component.selectedSessionTopic).toEqual(MOCK_TOPICS[0]);
       expect(component.selectedSessionSubject).toEqual(MOCK_SUBJECTS[0]);
     });
 
     it('não chama topicService se subjects estiver vazio', () => {
       component.subjects = [];
-      mockTopicService.getAll.mockClear();
+      mockTopicService.getAllData.mockClear();
       component.openSessionDetail(MOCK_SESSION);
-      expect(mockTopicService.getAll).not.toHaveBeenCalled();
+      expect(mockTopicService.getAllData).not.toHaveBeenCalled();
     });
 
     it('define sessão atrasada corretamente', () => {
-      mockSessionService.getAll.mockReturnValue(of([LATE_SESSION]));
+      mockSessionService.getAll.mockReturnValue(of({ data: [LATE_SESSION], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } }));
       component.loadSessions();
       expect(component.sessions[0].status).toBe('late');
     });
@@ -348,7 +348,7 @@ describe('Agenda', () => {
   describe('mapeamento de start_time no calendário', () => {
     it('usa "date" quando start_time é null', () => {
       const sessionSemHorario: StudySession = { ...MOCK_SESSION, start_time: null };
-      mockSessionService.getAll.mockReturnValue(of([sessionSemHorario]));
+      mockSessionService.getAll.mockReturnValue(of({ data: [sessionSemHorario], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } }));
       component.loadSessions();
       const event = (component.calendarOptions.events as any[])[0];
       expect(event.date).toBe('2026-03-20');
@@ -357,7 +357,7 @@ describe('Agenda', () => {
 
     it('usa "start" com datetime ISO quando start_time está presente', () => {
       const sessionComHorario: StudySession = { ...MOCK_SESSION, start_time: '09:30' };
-      mockSessionService.getAll.mockReturnValue(of([sessionComHorario]));
+      mockSessionService.getAll.mockReturnValue(of({ data: [sessionComHorario], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } }));
       component.loadSessions();
       const event = (component.calendarOptions.events as any[])[0];
       expect(event.start).toBe('2026-03-20T09:30');

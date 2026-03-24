@@ -10,7 +10,8 @@ RSpec.describe 'Api::V1::Topics', type: :request do
       create_list(:topic, 2, subject: subject_record)
       get "/api/v1/subjects/#{subject_record.id}/topics", headers: headers
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body).length).to eq(2)
+      body = JSON.parse(response.body)
+      expect(body['data'].length).to eq(2)
     end
 
     it 'retorna 404 para matéria de outro usuário' do
@@ -22,6 +23,37 @@ RSpec.describe 'Api::V1::Topics', type: :request do
     it 'retorna 401 sem token' do
       get "/api/v1/subjects/#{subject_record.id}/topics"
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    context 'paginação' do
+      before { create_list(:topic, 5, subject: subject_record) }
+
+      it 'retorna formato paginado com data e meta' do
+        get "/api/v1/subjects/#{subject_record.id}/topics", headers: headers
+        body = JSON.parse(response.body)
+        expect(body).to include('data', 'meta')
+        expect(body['meta']).to include('page', 'per_page', 'total', 'total_pages')
+      end
+
+      it 'respeita per_page' do
+        get "/api/v1/subjects/#{subject_record.id}/topics", params: { per_page: 2 }, headers: headers
+        body = JSON.parse(response.body)
+        expect(body['data'].length).to eq(2)
+        expect(body['meta']['total']).to eq(5)
+        expect(body['meta']['total_pages']).to eq(3)
+      end
+
+      it 'usa default per_page=50 sem parâmetros' do
+        get "/api/v1/subjects/#{subject_record.id}/topics", headers: headers
+        body = JSON.parse(response.body)
+        expect(body['meta']['per_page']).to eq(50)
+      end
+
+      it 'inclui headers X-Total e X-Total-Pages' do
+        get "/api/v1/subjects/#{subject_record.id}/topics", headers: headers
+        expect(response.headers['X-Total']).to eq('5')
+        expect(response.headers['X-Total-Pages']).to eq('1')
+      end
     end
   end
 

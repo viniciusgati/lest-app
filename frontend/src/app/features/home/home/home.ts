@@ -66,7 +66,7 @@ export class Home implements OnInit {
         this.weeklyProgress = progress;
         this.hasGoal = (progress?.target_hours ?? 0) > 0;
         this.subjectsMetrics = subjects;
-        this.weekSessions = sessions;
+        this.weekSessions = sessions.data;
         this.loading = false;
       },
       error: () => { this.loading = false; }

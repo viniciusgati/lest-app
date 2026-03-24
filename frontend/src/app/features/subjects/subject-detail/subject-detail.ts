@@ -60,8 +60,8 @@ export class SubjectDetail implements OnInit {
 
   loadTopics(): void {
     this.loading = true;
-    this.topicService.getAll(this.subjectId).subscribe({
-      next: (data) => { this.topics = data; this.loading = false; },
+    this.topicService.getAll(this.subjectId, { page: 1, per_page: 50 }).subscribe({
+      next: (response) => { this.topics = response.data; this.loading = false; },
       error: () => { this.loading = false; }
     });
   }

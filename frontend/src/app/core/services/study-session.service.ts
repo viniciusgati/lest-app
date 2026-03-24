@@ -1,15 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { StudySession, StudySessionResult } from '../models/study-session.model';
+import { PaginatedResponse } from '../models/paginated-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class StudySessionService {
   private http = inject(HttpClient);
   private readonly url = '/api/v1/study_sessions';
 
-  getAll(filters?: { status?: string; date_from?: string; date_to?: string }): Observable<StudySession[]> {
-    return this.http.get<StudySession[]>(this.url, { params: filters ?? {} });
+  getAll(filters?: { status?: string; date_from?: string; date_to?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<StudySession>> {
+    return this.http.get<PaginatedResponse<StudySession>>(this.url, { params: filters ?? {} });
+  }
+
+  getAllData(filters?: { status?: string; date_from?: string; date_to?: string }): Observable<StudySession[]> {
+    return this.getAll(filters).pipe(map(r => r.data));
   }
 
   create(session: Partial<StudySession>): Observable<StudySession> {

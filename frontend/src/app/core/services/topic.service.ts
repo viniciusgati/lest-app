@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Topic } from '../models/topic.model';
+import { PaginatedResponse } from '../models/paginated-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class TopicService {
@@ -11,8 +12,12 @@ export class TopicService {
     return `/api/v1/subjects/${subjectId}/topics`;
   }
 
-  getAll(subjectId: number): Observable<Topic[]> {
-    return this.http.get<Topic[]>(this.url(subjectId));
+  getAll(subjectId: number, params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<Topic>> {
+    return this.http.get<PaginatedResponse<Topic>>(this.url(subjectId), { params: params ?? {} });
+  }
+
+  getAllData(subjectId: number): Observable<Topic[]> {
+    return this.getAll(subjectId).pipe(map(r => r.data));
   }
 
   getOne(subjectId: number, id: number): Observable<Topic> {

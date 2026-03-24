@@ -43,15 +43,36 @@ describe('TopicService', () => {
   });
 
   describe('getAll()', () => {
-    it('should GET /api/v1/subjects/:subjectId/topics', () => {
-      service.getAll(subjectId).subscribe(topics => {
+    it('should GET /api/v1/subjects/:subjectId/topics returning paginated response', () => {
+      const paginatedResponse = {
+        data: [mockTopic],
+        meta: { page: 1, per_page: 50, total: 1, total_pages: 1 }
+      };
+      service.getAll(subjectId).subscribe(response => {
+        expect(response.data.length).toBe(1);
+        expect(response.data[0].name).toBe('Equações');
+        expect(response.meta.total).toBe(1);
+      });
+
+      const req = httpMock.expectOne(r => r.url === `/api/v1/subjects/${subjectId}/topics`);
+      expect(req.request.method).toBe('GET');
+      req.flush(paginatedResponse);
+    });
+  });
+
+  describe('getAllData()', () => {
+    it('should return only data array', () => {
+      const paginatedResponse = {
+        data: [mockTopic],
+        meta: { page: 1, per_page: 50, total: 1, total_pages: 1 }
+      };
+      service.getAllData(subjectId).subscribe(topics => {
         expect(topics.length).toBe(1);
         expect(topics[0].name).toBe('Equações');
       });
 
-      const req = httpMock.expectOne(`/api/v1/subjects/${subjectId}/topics`);
-      expect(req.request.method).toBe('GET');
-      req.flush([mockTopic]);
+      const req = httpMock.expectOne(r => r.url === `/api/v1/subjects/${subjectId}/topics`);
+      req.flush(paginatedResponse);
     });
   });
 

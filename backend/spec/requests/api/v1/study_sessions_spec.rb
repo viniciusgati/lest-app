@@ -11,13 +11,14 @@ RSpec.describe 'Api::V1::StudySessions', type: :request do
       create_list(:study_session, 2, topic: topic)
       get '/api/v1/study_sessions', headers: headers
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body).length).to eq(2)
+      body = JSON.parse(response.body)
+      expect(body['data'].length).to eq(2)
     end
 
     it 'não retorna sessões de outro usuário' do
       create(:study_session)
       get '/api/v1/study_sessions', headers: headers
-      expect(JSON.parse(response.body).length).to eq(0)
+      expect(JSON.parse(response.body)['data'].length).to eq(0)
     end
 
     it 'filtra por status' do
@@ -25,22 +26,22 @@ RSpec.describe 'Api::V1::StudySessions', type: :request do
       create(:study_session, :completed, topic: topic)
       get '/api/v1/study_sessions', params: { status: 'completed' }, headers: headers
       body = JSON.parse(response.body)
-      expect(body.length).to eq(1)
-      expect(body[0]['status']).to eq('completed')
+      expect(body['data'].length).to eq(1)
+      expect(body['data'][0]['status']).to eq('completed')
     end
 
     it 'filtra por date_from' do
       create(:study_session, topic: topic, scheduled_date: 10.days.ago)
       create(:study_session, topic: topic, scheduled_date: Date.today)
       get '/api/v1/study_sessions', params: { date_from: 5.days.ago.to_s }, headers: headers
-      expect(JSON.parse(response.body).length).to eq(1)
+      expect(JSON.parse(response.body)['data'].length).to eq(1)
     end
 
     it 'retorna status "late" para sessões atrasadas' do
       create(:study_session, :late, topic: topic)
       get '/api/v1/study_sessions', headers: headers
       body = JSON.parse(response.body)
-      expect(body[0]['status']).to eq('late')
+      expect(body['data'][0]['status']).to eq('late')
     end
 
     it 'filtra por status=late retornando apenas sessões atrasadas' do
@@ -48,8 +49,8 @@ RSpec.describe 'Api::V1::StudySessions', type: :request do
       create(:study_session, topic: topic, scheduled_date: Date.today)
       get '/api/v1/study_sessions', params: { status: 'late' }, headers: headers
       body = JSON.parse(response.body)
-      expect(body.length).to eq(1)
-      expect(body[0]['status']).to eq('late')
+      expect(body['data'].length).to eq(1)
+      expect(body['data'][0]['status']).to eq('late')
     end
 
     it 'filtra por status=scheduled retornando apenas sessões agendadas' do
@@ -57,12 +58,51 @@ RSpec.describe 'Api::V1::StudySessions', type: :request do
       create(:study_session, topic: topic, scheduled_date: Date.today)
       get '/api/v1/study_sessions', params: { status: 'scheduled' }, headers: headers
       body = JSON.parse(response.body)
-      expect(body.all? { |s| s['status'] == 'scheduled' }).to be true
+      expect(body['data'].all? { |s| s['status'] == 'scheduled' }).to be true
     end
 
     it 'retorna 401 sem token' do
       get '/api/v1/study_sessions'
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    context 'paginação' do
+      before { create_list(:study_session, 5, topic: topic) }
+
+      it 'retorna formato paginado com data e meta' do
+        get '/api/v1/study_sessions', headers: headers
+        body = JSON.parse(response.body)
+        expect(body).to include('data', 'meta')
+        expect(body['meta']).to include('page', 'per_page', 'total', 'total_pages')
+      end
+
+      it 'respeita per_page' do
+        get '/api/v1/study_sessions', params: { per_page: 2 }, headers: headers
+        body = JSON.parse(response.body)
+        expect(body['data'].length).to eq(2)
+        expect(body['meta']['per_page']).to eq(2)
+        expect(body['meta']['total']).to eq(5)
+        expect(body['meta']['total_pages']).to eq(3)
+      end
+
+      it 'retorna segunda página' do
+        get '/api/v1/study_sessions', params: { per_page: 2, page: 2 }, headers: headers
+        body = JSON.parse(response.body)
+        expect(body['data'].length).to eq(2)
+        expect(body['meta']['page']).to eq(2)
+      end
+
+      it 'usa default per_page=20 sem parâmetros' do
+        get '/api/v1/study_sessions', headers: headers
+        body = JSON.parse(response.body)
+        expect(body['meta']['per_page']).to eq(20)
+      end
+
+      it 'inclui headers X-Total e X-Total-Pages' do
+        get '/api/v1/study_sessions', headers: headers
+        expect(response.headers['X-Total']).to eq('5')
+        expect(response.headers['X-Total-Pages']).to eq('1')
+      end
     end
   end
 

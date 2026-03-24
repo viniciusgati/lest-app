@@ -30,7 +30,7 @@ const COMPLETED_SESSION: StudySession = {
 const NEXT_SESSION: StudySession = {
   ...MOCK_SESSION,
   id: 2,
-  scheduled_date: '2026-03-21',
+  scheduled_date: '2026-03-30',
   auto_generated: true
 };
 
