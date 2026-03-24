@@ -1,0 +1,80 @@
+<p-toast></p-toast>
+
+<div class="p-4">
+  <p-card header="Meu Perfil">
+    @if (loading) {
+      <div class="flex justify-content-center p-4">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      </div>
+    } @else {
+      <form [formGroup]="form" class="flex flex-column gap-3">
+        <div class="field">
+          <label for="name">Nome</label>
+          <input
+            id="name"
+            type="text"
+            pInputText
+            formControlName="name"
+            style="width: 100%"
+            placeholder="Seu nome"
+          />
+          @if (form.get('name')?.invalid && form.get('name')?.dirty) {
+            <small class="p-error">Nome é obrigatório</small>
+          }
+        </div>
+
+        <p class="text-color-secondary m-0 mt-2">Alterar senha (opcional)</p>
+
+        <div class="field">
+          <label for="currentPassword">Senha Atual</label>
+          <p-password
+            id="currentPassword"
+            formControlName="currentPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            placeholder="Senha atual"
+          ></p-password>
+        </div>
+
+        <div class="field">
+          <label for="password">Nova Senha</label>
+          <p-password
+            id="password"
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            placeholder="Nova senha"
+          ></p-password>
+        </div>
+
+        <div class="field">
+          <label for="passwordConfirmation">Confirmar Nova Senha</label>
+          <p-password
+            id="passwordConfirmation"
+            formControlName="passwordConfirmation"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            placeholder="Confirmar nova senha"
+          ></p-password>
+          @if (passwordMismatch) {
+            <small class="p-error">As senhas não coincidem</small>
+          }
+        </div>
+
+        <p-button
+          label="Salvar"
+          icon="pi pi-check"
+          [loading]="saving"
+          [disabled]="form.invalid"
+          (onClick)="submit()"
+        ></p-button>
+      </form>
+    }
+  </p-card>
+</div>

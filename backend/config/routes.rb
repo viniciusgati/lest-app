@@ -46,6 +46,8 @@ Rails.application.routes.draw do
       end
 
       post 'schedule/generate', to: 'schedule#generate'
+
+      resource :profile, only: %i[show update]
     end
   end
 

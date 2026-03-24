@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,13 +10,20 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [ToolbarModule, ButtonModule, TooltipModule],
+  imports: [ToolbarModule, ButtonModule, TooltipModule, RouterLink],
   template: `
     <p-toolbar>
       <div class="p-toolbar-group-start">
         <span class="font-bold text-lg">{{ pageTitle() }}</span>
       </div>
       <div class="p-toolbar-group-end">
+        <p-button
+          icon="pi pi-user"
+          [text]="true"
+          severity="secondary"
+          routerLink="/profile"
+          pTooltip="Perfil"
+        />
         <p-button
           icon="pi pi-sign-out"
           [text]="true"
@@ -36,7 +43,8 @@ export class HeaderComponent {
     '/': 'EduTrack',
     '/subjects': 'Matérias',
     '/agenda': 'Agenda',
-    '/goals': 'Metas'
+    '/goals': 'Metas',
+    '/profile': 'Meu Perfil'
   };
 
   private currentUrl = toSignal(
