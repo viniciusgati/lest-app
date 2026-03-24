@@ -18,7 +18,9 @@ export async function registerAndLogin(
   await page.locator('#password').fill(password);
   await page.locator('#password_confirmation').fill(password);
   await page.getByRole('button', { name: 'Cadastrar' }).click();
-  await page.waitForURL('/');
+  // Signup redireciona para login; faz login em seguida
+  await page.waitForURL('/auth/login');
+  await login(page, email, password);
   return { email, password };
 }
 
