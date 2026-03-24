@@ -28,6 +28,7 @@ export interface SignupPayload {
 
 export interface AuthResponse {
   message: string;
+  refresh_token?: string;
   user: AuthUser;
 }
 
@@ -35,6 +36,7 @@ export interface AuthResponse {
 export class AuthService {
   private readonly API_URL = '/api/v1/auth';
   private readonly TOKEN_KEY = 'auth_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
 
   currentUser = signal<AuthUser | null>(this.loadUserFromStorage());
 
@@ -48,6 +50,9 @@ export class AuthService {
         const token = response.headers.get('Authorization');
         if (token) {
           localStorage.setItem(this.TOKEN_KEY, token.replace('Bearer ', ''));
+        }
+        if (response.body?.refresh_token) {
+          localStorage.setItem(this.REFRESH_TOKEN_KEY, response.body.refresh_token);
         }
         if (response.body?.user) {
           this.currentUser.set(response.body.user);
@@ -68,6 +73,18 @@ export class AuthService {
     );
   }
 
+  refreshToken(): Observable<{ token: string; expires_in: number }> {
+    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.http.post<{ token: string; expires_in: number }>(
+      `${this.API_URL}/refresh`,
+      { refresh_token: refreshToken }
+    );
+  }
+
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
@@ -78,6 +95,7 @@ export class AuthService {
 
   clearSession(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem('auth_user');
     this.currentUser.set(null);
     this.router.navigate(['/auth/login']);

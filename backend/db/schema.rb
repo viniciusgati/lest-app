@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_16_184303) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_24_013154) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -18,6 +18,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_16_184303) do
     t.string "jti", null: false
     t.datetime "exp", null: false
     t.index ["jti"], name: "index_jwt_denylist_on_jti"
+  end
+
+  create_table "refresh_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_refresh_tokens_on_token", unique: true
+    t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
   end
 
   create_table "study_sessions", force: :cascade do |t|
@@ -90,6 +101,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_16_184303) do
     t.index ["user_id"], name: "index_weekly_goals_on_user_id"
   end
 
+  add_foreign_key "refresh_tokens", "users"
   add_foreign_key "study_sessions", "topics"
   add_foreign_key "subjects", "users"
   add_foreign_key "topics", "subjects"

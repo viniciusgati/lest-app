@@ -34,7 +34,7 @@ describe('AuthService', () => {
   });
 
   describe('login()', () => {
-    it('should store token in localStorage on successful login', () => {
+    it('armazena access token em localStorage', () => {
       service.login({ user: { email: 'test@test.com', password: '123456' } }).subscribe();
 
       const req = httpMock.expectOne('/api/v1/auth/login');
@@ -46,7 +46,19 @@ describe('AuthService', () => {
       expect(localStorage.getItem('auth_token')).toBe('token123');
     });
 
-    it('should set currentUser signal on successful login', () => {
+    it('armazena refresh token em localStorage quando presente na resposta', () => {
+      service.login({ user: { email: 'test@test.com', password: '123456' } }).subscribe();
+
+      const req = httpMock.expectOne('/api/v1/auth/login');
+      req.flush(
+        { message: 'Login realizado', refresh_token: 'rt_abc123', user: { id: 1, name: 'Test', email: 'test@test.com' } },
+        { headers: { Authorization: 'Bearer token123' } }
+      );
+
+      expect(localStorage.getItem('refresh_token')).toBe('rt_abc123');
+    });
+
+    it('define currentUser após login bem-sucedido', () => {
       service.login({ user: { email: 'test@test.com', password: '123456' } }).subscribe();
 
       const req = httpMock.expectOne('/api/v1/auth/login');
@@ -60,7 +72,7 @@ describe('AuthService', () => {
   });
 
   describe('logout()', () => {
-    it('should remove token from localStorage on logout', () => {
+    it('remove access token do localStorage', () => {
       localStorage.setItem('auth_token', 'token123');
 
       service.logout().subscribe();
@@ -71,7 +83,19 @@ describe('AuthService', () => {
       expect(localStorage.getItem('auth_token')).toBeNull();
     });
 
-    it('should clear currentUser on logout', () => {
+    it('remove refresh token do localStorage', () => {
+      localStorage.setItem('auth_token', 'token123');
+      localStorage.setItem('refresh_token', 'rt_abc');
+
+      service.logout().subscribe();
+
+      const req = httpMock.expectOne('/api/v1/auth/logout');
+      req.flush({ message: 'Logout realizado com sucesso.' });
+
+      expect(localStorage.getItem('refresh_token')).toBeNull();
+    });
+
+    it('limpa currentUser', () => {
       localStorage.setItem('auth_token', 'token123');
       localStorage.setItem('auth_user', JSON.stringify({ id: 1, name: 'Test', email: 'test@test.com' }));
 
@@ -84,23 +108,55 @@ describe('AuthService', () => {
     });
   });
 
+  describe('refreshToken()', () => {
+    it('POST /api/v1/auth/refresh com refresh_token do localStorage', () => {
+      localStorage.setItem('refresh_token', 'rt_stored');
+
+      service.refreshToken().subscribe();
+
+      const req = httpMock.expectOne('/api/v1/auth/refresh');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ refresh_token: 'rt_stored' });
+      req.flush({ token: 'new_jwt', expires_in: 86400 });
+    });
+
+    it('retorna novo token e expires_in', () => {
+      localStorage.setItem('refresh_token', 'rt_stored');
+
+      service.refreshToken().subscribe(res => {
+        expect(res.token).toBe('new_jwt');
+        expect(res.expires_in).toBe(86400);
+      });
+
+      const req = httpMock.expectOne('/api/v1/auth/refresh');
+      req.flush({ token: 'new_jwt', expires_in: 86400 });
+    });
+  });
+
+  describe('setToken()', () => {
+    it('salva token no localStorage', () => {
+      service.setToken('newtoken');
+      expect(localStorage.getItem('auth_token')).toBe('newtoken');
+    });
+  });
+
   describe('isAuthenticated()', () => {
-    it('should return false when no token exists', () => {
+    it('retorna false quando não há token', () => {
       expect(service.isAuthenticated()).toBe(false);
     });
 
-    it('should return true when token exists', () => {
+    it('retorna true quando token existe', () => {
       localStorage.setItem('auth_token', 'sometoken');
       expect(service.isAuthenticated()).toBe(true);
     });
   });
 
   describe('getToken()', () => {
-    it('should return null when no token stored', () => {
+    it('retorna null quando não há token', () => {
       expect(service.getToken()).toBeNull();
     });
 
-    it('should return stored token', () => {
+    it('retorna token armazenado', () => {
       localStorage.setItem('auth_token', 'mytoken');
       expect(service.getToken()).toBe('mytoken');
     });

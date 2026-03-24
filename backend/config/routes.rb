@@ -16,6 +16,8 @@ Rails.application.routes.draw do
                  sessions: 'api/v1/auth/sessions',
                  registrations: 'api/v1/auth/registrations'
                }
+
+    post '/auth/refresh', to: 'api/v1/auth/refresh_tokens#create'
   end
 
   namespace :api do
